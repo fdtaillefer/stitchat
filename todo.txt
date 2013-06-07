@@ -1,0 +1,4 @@
+- Use Express.js to handle the js files.
+- Use require.js to share constants and re-use the port number?
+- At the very least, precompile the templates. Maybe with Grunt
+- Make the chat work using dust to display messages? Will that require an MVC framework?
