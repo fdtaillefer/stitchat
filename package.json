@@ -2,6 +2,7 @@
   "scripts": {
     "start": "node index.js"
   },
+  "author": "Francois Taillefer",
   "name": "Stitchat",
   "version": "0.1.0",
   "engines": {
@@ -11,9 +12,10 @@
   "description": "Yet another chat application!",
   "dependencies": {
     "socket.io": "~0.9.14",
-    "dustjs-linkedin": "~1.2.5"
+    "dustjs-linkedin": "~1.2.5",
+    "express": "~3.2.6",
+    "consolidate": "~0.9.1"
   },
-  "author": "Francois Taillefer",
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-dustjs": "~0.2.2"
