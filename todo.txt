@@ -1,4 +1,3 @@
-- Try and render the template client-side
-- Use Express.js to handle the js files.
+- Try and render the template client-side, using pre-compiled templates, via express.
 - Use require.js to share constants and re-use the port number?
 - Make the chat work using dust to display messages? Will that require an MVC framework?
