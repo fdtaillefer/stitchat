@@ -40,18 +40,13 @@ function returnFile(response, filename, contentType){
  * @param response An http response
  */
 function returnChat(response){
-    fs.readFile('./tpl/chatPage.dust', function(err, data){
-        console.log('Template read');
-//      console.log(String(data));
-
-        var compiled = dust.compile(String(data), 'chatPage');
-        console.log('Template compiled.');
-//      console.log(compiled);
+    fs.readFile('./js/templates.js', function(err, data){
+        var compiled = String(data);
+        console.log('Compiled template loaded.');
         dust.loadSource(compiled);
         dust.render('chatPage', {'title':'Stitchat'}, function(err, out){
 
             console.log('Template rendered');
-//          console.log(out);
 
             response.writeHead(200, {'Content-Type': 'text/html'});
             response.write(out);
@@ -71,7 +66,6 @@ function onRequest(request, response) {
     var uri = url.parse(request.url).pathname
     var filename = path.join(process.cwd(), uri);
 
-//    console.log('uri is ' + uri);
     console.log('Request for filename ' + filename);
 
     path.exists(filename, function(exists) {

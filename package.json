@@ -1,15 +1,21 @@
 {
-    "scripts": {"start": "node index.js"},
-    "name": "Stitchat",
-    "version": "0.1.0",
-    "engines" : {
-        "node" : "0.10.*",
-        "npm" : "1.2.*"
-    },
-    "description": "Yet another chat application!",
-    "dependencies": {
-        "socket.io": "0.9.*",
-        "dustjs-linkedin": "1.2.*",
-    },
-    "author": "Francois Taillefer"
+  "scripts": {
+    "start": "node index.js"
+  },
+  "name": "Stitchat",
+  "version": "0.1.0",
+  "engines": {
+    "node": "~0.10.10",
+    "npm": "~1.2.25"
+  },
+  "description": "Yet another chat application!",
+  "dependencies": {
+    "socket.io": "~0.9.14",
+    "dustjs-linkedin": "~1.2.5"
+  },
+  "author": "Francois Taillefer",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-dustjs": "~0.2.2"
+  }
 }
