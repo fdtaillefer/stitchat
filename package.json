@@ -8,9 +8,8 @@
     },
     "description": "Yet another chat application!",
     "dependencies": {
-        "socket.io": "latest",
-        "dustjs-linkedin": "latest",
-        "jquery": "latest"
+        "socket.io": "0.9.*",
+        "dustjs-linkedin": "1.2.*",
     },
     "author": "Francois Taillefer"
 }

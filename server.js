@@ -4,7 +4,6 @@ var url = require("url");
 var path = require("path");
 var fs = require('fs');
 var socketio = require('socket.io');
-var $ = require('jquery');
 var port = require('./js/constants').port;
 
 var contentTypesByExtension = {
