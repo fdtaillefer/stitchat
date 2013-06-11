@@ -8,12 +8,14 @@ var port = require('./js/constants').port;
 
 function start(){
     var io = require('socket.io').listen(app.listen(port));
+
+    //Configure our app to render dust templates
     app.set('views', __dirname + '/tpl');
     app.set('view engine', "dust");
     app.engine('dust', consolidate.dust);
     app.use(express.static(__dirname + '/js'));
     app.get("/", function(req, res){
-        res.render("chatPage", {"title":"Stitchat"});
+        res.sendfile("pages/chatPage.html");
     });
 
     //When a client connects, we want to...

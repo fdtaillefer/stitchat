@@ -2,14 +2,26 @@ var port = 8888;
 
 require.config({
     "paths":{
-        "jquery":"//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min"
+        "jquery":"//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min",
+        "dust":"dust-core-1.2.5",
+        "socket.io":"../socket.io/socket.io"
+    },
+    shim: {
+        'templates': {
+            'deps': ['dust']
+        },
+        'dust': {
+            'exports': 'dust'
+        }
     }
 });
 
-require(["jquery", "../socket.io/socket.io"], function(jQuery, io){
+require(["jquery", "socket.io", "pageBuilder"], function(jQuery, io, pageBuilder){
 
-    jQuery.noConflict();
     jQuery(document).ready(function(){
+
+        pageBuilder.setTemplateToElement("chatPage", {"title":"Stitchat"}, jQuery("#pageContainer"));
+
         function onMessage(data){
             if(data.message){
 
@@ -39,11 +51,17 @@ require(["jquery", "../socket.io/socket.io"], function(jQuery, io){
         socket.on('message', onMessage);
 
         sendButton.on('click', function(event){
+
+            //Prevent the click from sending an http request
             event.preventDefault();
             event.stopPropagation();
+
+            //Send the message
             var data = {};
             data['message'] = field.val();
             socket.emit('sendChat', data);
+
+            //Clear the field
             field.val('');
         });
 
