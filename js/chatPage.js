@@ -16,8 +16,7 @@ require.config({
     }
 });
 
-require(["jquery", "socket.io", "pageBuilder"], function(jQuery, io, pageBuilder){
-
+require(["jquery", "socket.io", "pageBuilder", "constants"], function(jQuery, io, pageBuilder, constants){
     jQuery(document).ready(function(){
 
         pageBuilder.setTemplateToElement("chatPage", {"title":"Stitchat"}, jQuery("#pageContainer"));
@@ -43,7 +42,7 @@ require(["jquery", "socket.io", "pageBuilder"], function(jQuery, io, pageBuilder
         }
 
 
-        var socket = io.connect('http://localhost:' + port);
+        var socket = io.connect('http://localhost:' + constants.CHAT_PORT);
         var field = jQuery('#chatField');
         var sendButton = jQuery('#sendButton');
         var chatDisplay = jQuery('#chatDisplay');

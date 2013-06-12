@@ -4,16 +4,25 @@ var app = express();
 var dust = require('dustjs-linkedin');
 var consolidate = require('consolidate');
 var socketio = require('socket.io');
-var port = require('./js/constants').port;
+
+var requirejs = require('requirejs');
+requirejs.config({
+    //Pass the top-level main.js/index.js require
+    //function to requirejs so that node modules
+    //are loaded relative to the top-level JS file.
+    nodeRequire: require
+});
+var constants = requirejs('./js/constants');
 
 function start(){
-    var io = require('socket.io').listen(app.listen(port));
+    var io = require('socket.io').listen(app.listen(constants.CHAT_PORT));
 
     //Configure our app to render dust templates
     app.set('views', __dirname + '/tpl');
     app.set('view engine', "dust");
     app.engine('dust', consolidate.dust);
     app.use(express.static(__dirname + '/js'));
+
     app.get("/", function(req, res){
         res.sendfile("pages/chatPage.html");
     });

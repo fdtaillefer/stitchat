@@ -1,3 +1,3 @@
-var root = exports ? exports: window;
-
-root.port = 8888;
+define({
+    CHAT_PORT: 8888
+});

@@ -1,3 +1,2 @@
-- Use require.js to share constants and re-use the port number?
 - Use require's optimizer?
 - Make the chat work using dust to display messages? Will that require an MVC framework?

@@ -14,7 +14,8 @@
     "socket.io": "~0.9.14",
     "dustjs-linkedin": "~1.2.5",
     "express": "~3.2.6",
-    "consolidate": "~0.9.1"
+    "consolidate": "~0.9.1",
+    "requirejs": "~2.1.6"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
