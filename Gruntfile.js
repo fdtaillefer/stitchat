@@ -4,7 +4,7 @@ module.exports = function(grunt) {
         dustjs: {
             compile: {
                 files : {
-                    "js/templates.js": ["tpl/*.dust"]
+                    "js/app/templates.js": ["tpl/*.dust"]
                 }
             }
         }

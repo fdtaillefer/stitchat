@@ -10,7 +10,7 @@ requirejs.config({
     //are loaded relative to the top-level JS file.
     nodeRequire: require
 });
-var constants = requirejs('./js/constants');
+var constants = requirejs('./js/app/constants');
 
 function start(){
     var io = require('socket.io').listen(app.listen(constants.CHAT_PORT));

@@ -1,4 +1,4 @@
-define(["jquery", "dust", "templates"], function(jQuery, dust, templates){
+define(["jquery", "dust", "app/templates"], function(jQuery, dust, templates){
 
     return {
         /**
