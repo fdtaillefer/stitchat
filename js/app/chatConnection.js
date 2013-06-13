@@ -26,7 +26,7 @@ define(["socket.io", "app/constants"], function(io, constants) {
      */
     var onUserMessage = function(handler){
         ensureConnected();
-        socket.on('userMessage', handler);
+        socket.on(constants.CHAT_MESSAGE, handler);
     }
 
     /**
@@ -34,7 +34,7 @@ define(["socket.io", "app/constants"], function(io, constants) {
      */
     var onSystemMessage = function(handler){
         ensureConnected();
-        socket.on('systemMessage', handler);
+        socket.on(constants.SYSTEM_MESSAGE, handler);
     }
 
     /**
@@ -50,7 +50,7 @@ define(["socket.io", "app/constants"], function(io, constants) {
         data['message'] = message;
 
         //Send message
-        socket.emit('sendChat', data);
+        socket.emit(constants.CHAT_MESSAGE, data);
     }
 
      return {

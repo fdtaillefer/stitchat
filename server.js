@@ -1,8 +1,5 @@
-var http = require('http');
 var express = require('express');
 var app = express();
-var socketio = require('socket.io');
-
 var requirejs = require('requirejs');
 requirejs.config({
     //Pass the top-level main.js/index.js require
@@ -27,12 +24,12 @@ function start(){
         console.log('A user connected to the chat');
 
         //Greet the user
-        socket.emit('systemMessage', { 'message': 'Welcome to stitchat' });
+        socket.emit(constants.SYSTEM_MESSAGE, { 'message': 'Welcome to stitchat' });
 
         //Listen to user for chat messages. Transfer their messages to all sockets
-        socket.on('sendChat', function (data) {
-            console.log('Received sendChat from a user: ' + data.message);
-            io.sockets.emit('userMessage', data);
+        socket.on(constants.CHAT_MESSAGE, function (data) {
+            console.log('Received ' + constants.CHAT_MESSAGE + ' from a user: ' + data.message);
+            io.sockets.emit(constants.CHAT_MESSAGE, data);
         });
     })
 
