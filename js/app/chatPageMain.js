@@ -1,8 +1,8 @@
-require(["jquery", "socket.io", "app/pageBuilder", "app/componentUtils", "app/constants"], function(jQuery, io, pageBuilder, componentUtils, constants){
+require(["jquery", "app/pageBuilder", "app/chatConnection", "app/componentUtils"], function(jQuery, pageBuilder, chatConnection, componentUtils){
 
     /**
      * Handles an incoming user message.
-     * @param Data object describing the message.
+     * @param data object describing the message.
      */
     var onUserMessage = function(data){
 
@@ -14,7 +14,7 @@ require(["jquery", "socket.io", "app/pageBuilder", "app/componentUtils", "app/co
 
     /**
      * Handles an incoming system message.
-     * @param Data object describing the message.
+     * @param data object describing the message.
      */
     var onSystemMessage = function(data){
 
@@ -25,28 +25,11 @@ require(["jquery", "socket.io", "app/pageBuilder", "app/componentUtils", "app/co
     }
 
     /**
-     * Sends a chat message to the chat server.
-     * @param socket The socket that will send the message
-     * @param message The actual text of the message
-     */
-    function outputChatMessage(socket, message){
-
-        //Build message data
-        var data = {};
-        data['message'] = message;
-
-        //Send message
-        socket.emit('sendChat', data);
-    }
-
-    /**
      * Performs UI tasks related to sending a chat message, as well as ouputting the message to the server.
-     * @param socket The socket that will send the message
      */
-    function sendChatMessage(socket){
+    function sendChatMessage(){
         var chatField = jQuery('#chatField');
-
-        outputChatMessage(socket, chatField.val());
+        chatConnection.outputChatMessage(chatField.val());
 
         //Clear the field
         chatField.val('');
@@ -57,13 +40,12 @@ require(["jquery", "socket.io", "app/pageBuilder", "app/componentUtils", "app/co
 
         //Render template and apply the result to the skeleton.
         //We have token data here (a static title) for now, to validate that rendering used it.
-        pageBuilder.setTemplateToElement("chatPage", {"title":"Stitchat"}, jQuery("#pageContainer"));
+        pageBuilder.renderToElement("chatPage", {"title":"Stitchat"}, jQuery("#pageContainer"));
 
         //Setup event handlers for chat events incoming from server
-        var chatConnectionString = constants.HOST + ':' + constants.CHAT_PORT;
-        var socket = io.connect(chatConnectionString);
-        socket.on('userMessage', onUserMessage);
-        socket.on('systemMessage', onSystemMessage);
+        chatConnection.connect();
+        chatConnection.onUserMessage(onUserMessage);
+        chatConnection.onSystemMessage(onSystemMessage);
 
         //Setup event handlers for graphical components
         jQuery('#sendButton').on('click', function(event){
@@ -72,7 +54,7 @@ require(["jquery", "socket.io", "app/pageBuilder", "app/componentUtils", "app/co
             event.preventDefault();
             event.stopPropagation();
 
-            sendChatMessage(socket)
+            sendChatMessage()
         });
     });
 });

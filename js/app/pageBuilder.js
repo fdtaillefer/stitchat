@@ -8,7 +8,7 @@ define(["jquery", "dust", "app/templates"], function(jQuery, dust, templates){
          * @param data Data to use when rendering.
          * @param Element which will receive the output as its html.
          */
-        setTemplateToElement: function(templateName, data, element){
+        renderToElement: function(templateName, data, element){
             dust.render(templateName, data, function(err, out){
                 element.html(out);
             });
