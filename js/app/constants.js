@@ -1,3 +1,4 @@
 define({
-    CHAT_PORT: 8888
+    CHAT_PORT: 8888,
+    HOST:"http://localhost"
 });

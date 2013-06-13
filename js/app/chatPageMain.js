@@ -1,35 +1,49 @@
 require(["jquery", "socket.io", "app/pageBuilder", "app/constants"], function(jQuery, io, pageBuilder, constants){
     jQuery(document).ready(function(){
 
-        pageBuilder.setTemplateToElement("chatPage", {"title":"Stitchat"}, jQuery("#pageContainer"));
+        /**
+         * Appends newNode to element, scrolling element back to bottom if it was previously that way.
+         */
+        function appendMaintainingScroll(element, newNode){
 
-        function onMessage(data){
-            if(data.message){
+            //Remember if the element's scroll is at bottom
+            var scrollBottomed = element.prop('scrollHeight') - element.scrollTop() == element.height();
 
-                //Remember if the chatField's scroll is at bottom
-                var scrollBottomed = chatDisplay.prop('scrollHeight') - chatDisplay.scrollTop() == chatDisplay.height();
+            //Append the new node inside element
+            element.append(newNode);
 
-                //Append a div inside chatField
-                var newLine = jQuery('<div class="chatLine"></div>');
-                chatDisplay.append(newLine);
-                newLine.text(data.message);
-
-                //If scroll was at bottom, put it back to bottom
-                if(scrollBottomed){
-                    chatDisplay.scrollTop(chatDisplay.prop('scrollHeight') - chatDisplay.height())
-                }
-            } else {
-                console.log('Message with no message? : ', data);
+            //If scroll was at bottom, put it back to bottom
+            if(scrollBottomed){
+                element.scrollTop(element.prop('scrollHeight') - element.height());
             }
         }
 
+        pageBuilder.setTemplateToElement("chatPage", {"title":"Stitchat"}, jQuery("#pageContainer"));
 
-        var socket = io.connect('http://localhost:' + constants.CHAT_PORT);
+        var onUserMessage = function(data){
+
+            //Append a div inside chatField
+            var newLine = jQuery('<div class="userMessage"></div>');
+            newLine.text(data.message);
+            appendMaintainingScroll(chatDisplay, newLine);
+        }
+
+        var onSystemMessage = function(data){
+
+            //Append a div inside chatField
+            var newLine = jQuery('<div class="systemMessage"></div>');
+            newLine.text(data.message);
+            appendMaintainingScroll(chatDisplay, newLine);
+        }
+
+
+        var socket = io.connect( constants.HOST + ':' + constants.CHAT_PORT);
         var field = jQuery('#chatField');
         var sendButton = jQuery('#sendButton');
         var chatDisplay = jQuery('#chatDisplay');
 
-        socket.on('message', onMessage);
+        socket.on('userMessage', onUserMessage);
+        socket.on('systemMessage', onSystemMessage);
 
         sendButton.on('click', function(event){
 

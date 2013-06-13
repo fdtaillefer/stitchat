@@ -15,7 +15,7 @@ var constants = requirejs('./js/app/constants');
 function start(){
     var io = require('socket.io').listen(app.listen(constants.CHAT_PORT));
 
-    //Configure our app to render dust templates
+    //Server should serve js files
     app.use(express.static(__dirname + '/js'));
 
     app.get("/", function(req, res){
@@ -27,12 +27,12 @@ function start(){
         console.log('A user connected to the chat');
 
         //Greet the user
-        socket.emit('message', { 'message': 'Welcome to stitchat' });
+        socket.emit('systemMessage', { 'message': 'Welcome to stitchat' });
 
         //Listen to user for chat messages. Transfer their messages to all sockets
         socket.on('sendChat', function (data) {
-            console.log('A user sent a message: ' + data.message);
-            io.sockets.emit('message', data);
+            console.log('Received sendChat from a user: ' + data.message);
+            io.sockets.emit('userMessage', data);
         });
     })
 
