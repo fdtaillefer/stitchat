@@ -10,14 +10,18 @@ requirejs.config({
 var constants = requirejs('./js/app/constants');
 
 function start(){
-    var io = require('socket.io').listen(app.listen(constants.CHAT_PORT));
+    var server = app.listen(constants.CHAT_PORT);
 
-    //Server should serve js files
+    //Server should serve client-side js files
     app.use(express.static(__dirname + '/js'));
 
+    //Setup default behavior
     app.get("/", function(req, res){
         res.sendfile("pages/chatPage.html");
     });
+
+
+    var io = require('socket.io').listen(server);
 
     //When a client connects, we want to...
     io.sockets.on('connection', function(socket){
