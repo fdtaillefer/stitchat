@@ -1,4 +1,4 @@
-require(["jquery", "app/pageBuilder", "app/chatConnection", "app/componentUtils"], function(jQuery, pageBuilder, chatConnection, componentUtils){
+require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils"], function(jQuery, pageBuilder, chatConnection, scrollUtils){
 
     /**
      * Handles an incoming user message.
@@ -9,7 +9,7 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/componentUtils"
         //Append a div inside chatField
         var newLine = jQuery('<div class="userMessage"></div>');
         newLine.text(data.message);
-        componentUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
+        scrollUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
     }
 
     /**
@@ -21,7 +21,7 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/componentUtils"
         //Append a div inside chatField
         var newLine = jQuery('<div class="systemMessage"></div>');
         newLine.text(data.message);
-        componentUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
+        scrollUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
     }
 
     /**

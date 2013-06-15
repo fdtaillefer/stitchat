@@ -1,5 +1,5 @@
 - Use require's optimizer?
-- Automated tests
+- Automated tests (This has now begun)
 - Make the chat work using dust to display messages? Will that require an MVC framework?
 - Fun stuff like actual features
     - User names, obviously

@@ -4,7 +4,7 @@
  * @return
  */
 var isScrollAtBottom = function(element){
-    return element.prop('scrollHeight') - element.scrollTop() === element.height();
+    return element.prop('scrollHeight') - element.scrollTop() <= element.height();
 }
 
 /**
@@ -12,7 +12,7 @@ var isScrollAtBottom = function(element){
  * @param element Element to scroll down
  */
 var scrollToBottom = function(element){
-    element.scrollTop(element.prop('scrollHeight') - element.height());
+    element.scrollTop(element.prop('scrollHeight'));
 }
 
 /**
