@@ -1,16 +1,20 @@
-define(["jquery", "dust", "app/templates"], function(jQuery, dust, templates){
+/**
+ * Offers page building utilities.
+ * This is designed to be unaware of which rendering engine is being used.
+ */
+define(["app/pageRenderer"], function(pageRenderer){
 
     return {
         /**
-         * This function renders a precompiled template with the provided name, using the provided data;
+         * This function renders a template with the provided name, using the provided data;
          * and sets the result as the html of the provided element.
          * @param templateName Name of the template to render.
          * @param data Data to use when rendering.
-         * @param Element which will receive the output as its html.
+         * @param element Element which will receive the output as its html.
          */
         renderToElement: function(templateName, data, element){
-            dust.render(templateName, data, function(err, out){
-                element.html(out);
+            pageRenderer.render(templateName, data, function(result){
+                element.html(result);
             });
         }
     }

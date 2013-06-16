@@ -1,3 +1,6 @@
+/**
+ * This file handles the connection with the chat server.
+ */
 define(["socket.io", "app/constants"], function(io, constants) {
 
     var socket;

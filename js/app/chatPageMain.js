@@ -1,3 +1,7 @@
+/**
+ * The main javascript of the chat page.
+ * Contains code that pertains to the view.
+ */
 require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils"], function(jQuery, pageBuilder, chatConnection, scrollUtils){
 
     /**

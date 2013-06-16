@@ -1,4 +1,9 @@
 /**
+ * This contains utilities that work with the scroll state of jQuery objects.
+ */
+
+
+/**
  * Returns whether element's vertical scroll is all the way at the bottom.
  * @param element Element to check
  * @return
