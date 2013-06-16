@@ -119,10 +119,10 @@ describe('scrollUtils', function(){
                 newLine.text("There");
                 appendMaintainingScroll(atBottom, newLine);
 
-                //Look for the new node and return its text
-                return jQuery("#properAppend").text();
+                //To make sure the node was appended, get atBottom's last child and make sure it's the node
+                return atBottom.children().last().attr('id');
             },function(err,result){
-                assert.equal(result, "There");
+                assert.equal(result, "properAppend");
                 done();
             });
         })
