@@ -4,7 +4,6 @@ nodeRequire = require;
 var assert = nodeRequire("assert");
 var sinon = nodeRequire("sinon");
 
-
 require = nodeRequire('requirejs');
 //Shim config doesn't work with node, so we can't use the real dust dependency and just stub the render() method.
 //Instead, we'll have to substitute our own class which will pretty much act as a stub.

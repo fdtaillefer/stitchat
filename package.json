@@ -23,7 +23,9 @@
     "mocha": "~1.11.0",
     "node-phantom": "~0.2.3",
     "phantomjs": "~1.9.1-0",
-    "sinon": "~1.7.2"
+    "sinon": "~1.7.2",
+    "jsdom": "~0.6.5",
+    "jquery": "~1.8.3"
   },
   "repository": {
     "type": "git",
