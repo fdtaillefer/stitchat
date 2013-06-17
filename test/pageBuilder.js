@@ -54,7 +54,7 @@ describe('pageBuilder', function(){
             assert(renderStub.calledWith("Template", {"Some":"data"}));
         })
 
-        it('Should set the element\'s html to the result ***TODO***', function(){
+        it('Should set the element\'s html to the result', function(){
             pageBuilder.renderToElement("Template", {"Some":"data"}, jQuery("#testDiv"));
             assert.equal(jQuery("#testDiv").html(), "<span>Result</span>");
         })

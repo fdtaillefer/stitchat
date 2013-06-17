@@ -6,7 +6,7 @@ require.config({
     "paths":{
         "jquery":"//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min",
         "dust":"dust-core-1.2.5",
-        "socket.io":"../socket.io/socket.io",
+        "socketio":"../socket.io/socket.io",
         "app":"../app",
         //Define template renderer here
         "app/pageRenderer":"../app/dustRenderer"

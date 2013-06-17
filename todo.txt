@@ -1,5 +1,6 @@
 - Use require's optimizer?
-- Automated tests (This has now begun)
+- Change dustRendererDependencies/dust: Remove the code from the render() function  and stub the empty function instead.
+- Automated tests for the frontend
 - Make the chat work using dust to display messages? Will that require an MVC framework?
 - Fun stuff like actual features
     - User names, obviously

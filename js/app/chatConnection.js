@@ -1,7 +1,7 @@
 /**
  * This file handles the connection with the chat server.
  */
-define(["socket.io", "app/constants"], function(io, constants) {
+define(["socketio", "app/constants"], function(io, constants) {
 
     var socket;
 
@@ -25,7 +25,18 @@ define(["socket.io", "app/constants"], function(io, constants) {
     }
 
     /**
+     * Disconnects from the chat server, if connected.
+     */
+    var disconnect = function(){
+        if(socket){
+            socket.disconnect();
+            socket = null;
+        }
+    }
+
+    /**
      * Registers a handler for an incoming user message. This must not be called before connect().
+     * The handler callback should receive one parameter which is a data object.
      */
     var onUserMessage = function(handler){
         ensureConnected();
@@ -34,6 +45,7 @@ define(["socket.io", "app/constants"], function(io, constants) {
 
     /**
      * Registers a handler for an incoming system message. This must not be called before connect().
+     * The handler callback should receive one parameter which is a data object.
      */
     var onSystemMessage = function(handler){
         ensureConnected();
@@ -58,6 +70,8 @@ define(["socket.io", "app/constants"], function(io, constants) {
 
      return {
         "connect": connect,
+        "disconnect": disconnect,
+        "ensureConnected":ensureConnected,
         "onUserMessage": onUserMessage,
         "onSystemMessage": onSystemMessage,
         "outputChatMessage": outputChatMessage
