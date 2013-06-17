@@ -22,7 +22,8 @@
     "grunt-dustjs": "~0.2.2",
     "mocha": "~1.11.0",
     "node-phantom": "~0.2.3",
-    "phantomjs": "~1.9.1-0"
+    "phantomjs": "~1.9.1-0",
+    "sinon": "~1.7.2"
   },
   "repository": {
     "type": "git",
