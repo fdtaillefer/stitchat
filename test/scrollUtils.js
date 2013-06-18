@@ -1,5 +1,5 @@
 var assert = require("assert");
-var phantom=require('node-phantom');
+var phantom = require('node-phantom');
 
 describe('scrollUtils', function(){
 
@@ -38,6 +38,8 @@ describe('scrollUtils', function(){
                             },function(err,result){
 
                                 //Finally notify mocha that after all those async calls, before() is done running.
+                                //Note that while page.evaluate in phantomJS is normally sync,
+                                //everything in node-phantom is async due to how they communicate together.
                                 done();
                             });
                         });

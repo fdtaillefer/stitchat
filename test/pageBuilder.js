@@ -1,11 +1,9 @@
-//Remember node's require variable, since we're about to overwrite it.
-//This will allow our client-side script to access requireJS as expected when it uses require().
-nodeRequire = require;
-var assert = nodeRequire("assert");
-var sinon = nodeRequire("sinon");
-var jsdom = nodeRequire("jsdom").jsdom;
+var assert = require("assert");
+var sinon = require("sinon");
+var jsdom = require("jsdom").jsdom;
+var jquery = require('jquery');
 
-require = nodeRequire('requirejs');
+require = require('requirejs');
 require.config({
     "baseUrl": 'test/pageBuilderDependencies',
     paths: {
@@ -17,7 +15,7 @@ require.config({
     //Pass the top-level main.js/index.js require
     //function to requirejs so that node modules
     //are loaded relative to the top-level JS file.
-    nodeRequire: nodeRequire
+    nodeRequire: require
 });
 
 describe('pageBuilder', function(){
@@ -28,7 +26,7 @@ describe('pageBuilder', function(){
     var doc = jsdom("<html><head></head><body><div id='testDiv'></div></body></html>");
     var docWindow = doc.createWindow();
 
-    var jQuery = nodeRequire('jquery').create(docWindow);
+    var jQuery = jquery.create(docWindow);
 
     var renderStub;
 

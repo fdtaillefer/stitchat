@@ -1,13 +1,9 @@
-//Remember node's require variable, since we're about to overwrite it.
-//This will allow our client-side script to access requireJS as expected when it uses require().
-nodeRequire = require;
-var assert = nodeRequire("assert");
-var sinon = nodeRequire("sinon");
+var assert = require("assert");
+var sinon = require("sinon");
 
-require = nodeRequire('requirejs');
-//Shim config doesn't work with node, so we can't use the real dust dependency and just stub the render() method.
-//Instead, we'll have to substitute our own class which will pretty much act as a stub.
-//It's less graceful because the stubbed behavior is in another file, but it works.
+require = require('requirejs');
+//Shim config doesn't work with node, so we can't use the real dust dependency (and just stub the render() method).
+//Instead, we'll have to substitute our own behaviorless class which we'll stub in the same way.
 require.config({
     "baseUrl": 'test/dustRendererDependencies',
     paths: {
@@ -17,7 +13,7 @@ require.config({
     //Pass the top-level main.js/index.js require
     //function to requirejs so that node modules
     //are loaded relative to the top-level JS file.
-    nodeRequire: nodeRequire
+    nodeRequire: require
 });
 
 describe('dustRenderer', function(){

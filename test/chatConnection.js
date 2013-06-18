@@ -1,25 +1,20 @@
-//Remember node's require variable, since we're about to overwrite it.
-//This will allow our client-side script to access requireJS as expected when it uses require().
-nodeRequire = require;
-var assert = nodeRequire("assert");
-var sinon = nodeRequire("sinon");
+var assert = require("assert");
+var sinon = require("sinon");
 
-require = nodeRequire('requirejs');
+require = require('requirejs');
 require.config({
     "baseUrl": 'js',
     paths: {
-        //"actual": '../../js/app',
         //The socket.io server seems coded to give the socket.io client, but the server won't be running for this test.
         //Meanwhile, requireJS doesn't seem to let us dig into node_modules.
         //That leaves us with the fake dependency option.
         "socketio":"../test/chatConnectionDependencies/socket.io"
-        //"app":"."
     },
 
     //Pass the top-level main.js/index.js require
     //function to requirejs so that node modules
     //are loaded relative to the top-level JS file.
-    nodeRequire: nodeRequire
+    nodeRequire: require
 });
 
 var io = require('socketio');
