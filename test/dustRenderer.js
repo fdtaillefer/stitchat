@@ -24,16 +24,29 @@ describe('dustRenderer', function(){
 
     var dustRenderer = require('actual/dustRenderer');
     var dust = require('dust');
+    var renderStub;
+
+    beforeEach(function(){
+        renderStub = sinon.stub(dust, "render", function(templateName, data, callback){
+            if(templateName === "error"){
+                callback("error", null);
+            } else {
+                callback(null, "success");
+            }
+        })
+    })
+
+    afterEach(function(){
+        renderStub.restore();
+    })
 
     describe('.render', function(){
 
         it('Should ask dust to render the template', function(){
             //Check that dust's render method is called exactly once, with the proper template and data.
-            var renderSpy = sinon.spy(dust, "render");
             dustRenderer.render("Template", {"Some":"data"}, function(result){});
-            assert.equal(renderSpy.callCount, 1);
-            assert(renderSpy.calledWith("Template", {"Some":"data"}));
-            dust.render.restore();
+            assert.equal(renderStub.callCount, 1);
+            assert(renderStub.calledWith("Template", {"Some":"data"}));
         })
 
         it('Should throw an error if dust fails to render the template', function(){
