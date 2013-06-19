@@ -23,7 +23,7 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils"], 
     var onSystemMessage = function(data){
 
         //Append a div inside chatField
-        var newLine = jQuery('<div class="systemMessage"></div>');
+        var newLine = jQuery('<div class="systemMessage ' + data.type + '"></div>');
         newLine.text(data.message);
         scrollUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
     }

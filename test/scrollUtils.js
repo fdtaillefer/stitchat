@@ -3,6 +3,9 @@ var phantom = require('node-phantom');
 
 describe('scrollUtils', function(){
 
+    //Seems to timeout the first time around...
+    this.timeout(10000);
+
     //This script works with jQuery components, and more specifically with browser environment properties (such as scrollHeight),
     //so we need to run the tests inside a DOM environment AND with a browser. Hence the use of phantomJS.
     var _ph, _page;

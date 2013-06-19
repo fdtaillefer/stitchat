@@ -1,13 +1,20 @@
+/**
+ * Chat server module.
+ */
 var express = require('express');
 var app = express();
-var requirejs = require('requirejs');
+var socketio = require('socket.io');
+
+
+requirejs = require('requirejs');
 requirejs.config({
+    baseUrl:'js',
     //Pass the top-level main.js/index.js require
     //function to requirejs so that node modules
     //are loaded relative to the top-level JS file.
     nodeRequire: require
 });
-var constants = requirejs('./js/app/constants');
+var constants = requirejs('app/constants');
 
 function start(){
     var server = app.listen(constants.CHAT_PORT);
@@ -21,14 +28,14 @@ function start(){
     });
 
 
-    var io = require('socket.io').listen(server);
+    var io = socketio.listen(server);
 
     //When a client connects, we want to...
     io.sockets.on('connection', function(socket){
         console.log('A user connected to the chat');
 
         //Greet the user
-        socket.emit(constants.SYSTEM_MESSAGE, { 'message': 'Welcome to stitchat' });
+        socket.emit(constants.SYSTEM_MESSAGE, { 'message':'Welcome to stitchat!', 'type':constants.SYSTEM_WELCOME });
 
         //Listen to user for chat messages. Transfer their messages to all sockets
         socket.on(constants.CHAT_MESSAGE, function (data) {
