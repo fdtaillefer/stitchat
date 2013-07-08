@@ -6,18 +6,50 @@ var app = express();
 var socketio = require('socket.io');
 
 
-requirejs = require('requirejs');
-requirejs.config({
-    baseUrl:'js',
-    //Pass the top-level main.js/index.js require
-    //function to requirejs so that node modules
-    //are loaded relative to the top-level JS file.
-    nodeRequire: require
-});
-var constants = requirejs('app/constants');
+// requirejs = require('requirejs');
+// requirejs.config({
+//     baseUrl:'js',
+//     //Pass the top-level main.js/index.js require
+//     //function to requirejs so that node modules
+//     //are loaded relative to the top-level JS file.
+//     nodeRequire: require
+// });
+// var constants = requirejs('app/constants');
+var requirejs, constants;
+var server;
 
-function start(){
-    var server = app.listen(constants.CHAT_PORT);
+function start(options){
+
+    //Configure default options
+    if(!options){
+        options = {};
+    }
+
+    if(!options["logLevel"]){
+        options["logLevel"] = 3;
+    }
+
+    if(!options["requirejs"]){
+
+        if(!requirejs){
+            requirejs = require('requirejs');
+            requirejs.config({
+                baseUrl:'js',
+                //Pass the top-level main.js/index.js require
+                //function to requirejs so that node modules
+                //are loaded relative to the top-level JS file.
+                nodeRequire: require
+            });
+        }
+
+        options["requirejs"] = requirejs;
+    }
+
+    constants = options["requirejs"]('app/constants');
+
+
+
+    server = app.listen(constants.CHAT_PORT);
 
     //Server should serve client-side js files
     app.use(express.static(__dirname + '/js'));
@@ -29,22 +61,32 @@ function start(){
 
 
     var io = socketio.listen(server);
+    io.set('log level', options["logLevel"]);
 
     //When a client connects, we want to...
     io.sockets.on('connection', function(socket){
-        console.log('A user connected to the chat');
+        if(options["logLevel"] >= 2){
+            console.log('A user connected to the chat');
+        }
 
         //Greet the user
         socket.emit(constants.SYSTEM_MESSAGE, { 'message':'Welcome to stitchat!', 'type':constants.SYSTEM_WELCOME });
 
         //Listen to user for chat messages. Transfer their messages to all sockets
         socket.on(constants.CHAT_MESSAGE, function (data) {
-            console.log('Received ' + constants.CHAT_MESSAGE + ' from a user: ' + data.message);
+            if(options["logLevel"] >= 2){
+                console.log('Received ' + constants.CHAT_MESSAGE + ' from a user: ' + data.message);
+            }
             io.sockets.emit(constants.CHAT_MESSAGE, data);
         });
     })
+        console.log('Chat server has started.');
+}
 
-    console.log('Server has started.');
+function stop(){
+    server.close()
+    console.log('Chat server has stopped.');
 }
 
 exports.start = start;
+exports.stop = stop;

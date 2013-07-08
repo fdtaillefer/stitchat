@@ -15,11 +15,6 @@ var assert = require('assert');
 
 
 
-//Doing this works but it pollutes the output.
-//Also, it causes requiresjs to be configured twice and pretty much needs both configs to be the same.
-//Going to comment it out, a test mode of some kind could be added to work around those problems.
-//var chatServer = require("../server");
-//chatServer.start();
 
 var nodeRequire = require;
 require = require('requirejs');
@@ -30,6 +25,11 @@ require.config({
     //are loaded relative to the top-level JS file.
     nodeRequire: require
 });
+
+//Start the chat server with WARNING level output and giving it the requirejs we just configured,
+//so that it won't try re-configuring it.
+var chatServer = nodeRequire("../server");
+chatServer.start({logLevel:1, requirejs:require});
 
 var constants = require('app/constants');
 var connectionString = constants.HOST + ":" + constants.CHAT_PORT;
@@ -49,20 +49,26 @@ describe('Chat page frontend', function(done){
         assert.ok(fs.existsSync(jar), 'The specified jar does not exist: ' + jar);
 
         server = new SeleniumServer.SeleniumServer({jar: jar, port:SELENIUM_PORT});
-        server.start();
+        server.start().then(function(address){
 
-        //We have asynchronously asked the server to start.
-        //However, it is not ready to start accepting requests.
-        //It will be ready when the address() promise resolves; we can't start our client till then.
-        server.address().then(function(address){
-
-            //We'll also load the url once here, because the first time is a lot slower.
+            //After server's ready, start the client.
+            //Also load the url once here, because the first time is a lot slower.
             client.init().url(connectionString, done);
         });
     });
 
     after(function(done) {
-        client.end(done);
+        //Stop client
+        client.end(function(){
+
+            //Stop chat server
+            chatServer.stop();
+
+            //Stop selenium server
+            server.stop().then(function(){
+                done();
+            });
+        });
     });
 
     //We'll do a fresh connection to the server before each test

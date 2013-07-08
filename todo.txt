@@ -1,6 +1,5 @@
-- Runnings the tests is no longer a one-liner. Make npm test call a grunt test task instead?
-- Automated tests for the frontend
-- Use require's optimizer?
+- Finish automated tests for the frontend
+- Use requirejs's optimizer?
 - Make the chat work using dust to display messages? Will that require an MVC framework?
 - Fun stuff like actual features
     - User names, obviously

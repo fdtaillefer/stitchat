@@ -120,7 +120,7 @@ describe('chatConnection', function(){
             assert(onStub.calledWith(constants.SYSTEM_MESSAGE, callback));
         })
 
-        it('Should throw an error if there is no connection ***TODO***', function(){
+        it('Should throw an error if there is no connection', function(){
             assert.throws(function(){
                 chatConnection.onSystemMessage(function(data){});
             });
