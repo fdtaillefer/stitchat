@@ -1,5 +1,12 @@
+//Webdriverjs seems to expect selenium server's default port 4444,
+//whilst starting a server programmatically without giving a port seems to default to 0.
+var SELENIUM_PORT = 4444;
+
 var webdriverjs = require('webdriverjs');
-var client;
+//TODO find a way to pass the server port number here rather than rely on default config
+var client = webdriverjs.remote({ desiredCapabilities: {browserName: 'firefox'},
+    logLevel: 'silent'
+});
 var SeleniumServer = require('selenium-webdriver/remote');
 var fs = require('fs');
 var server;
@@ -29,9 +36,6 @@ var connectionString = constants.HOST + ":" + constants.CHAT_PORT;
 
 var chatFieldSelector = '#chatField';
 var greetingFieldSelector = '.' + constants.SYSTEM_WELCOME;
-//Webdriverjs seems to expect selenium server's default port 4444,
-//whilst starting a server programmatically without giving a port seems to default to 0.
-var SELENIUM_PORT = 4444;
 
 describe('Chat page frontend', function(done){
 
@@ -51,10 +55,6 @@ describe('Chat page frontend', function(done){
         //However, it is not ready to start accepting requests.
         //It will be ready when the address() promise resolves; we can't start our client till then.
         server.address().then(function(address){
-            //TODO find a way to pass the server port number here rather than rely on default config
-            client = webdriverjs.remote({ desiredCapabilities: {browserName: 'firefox'},
-                logLevel: 'silent'
-            });
 
             //We'll also load the url once here, because the first time is a lot slower.
             client.init().url(connectionString, done);
