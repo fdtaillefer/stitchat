@@ -6,5 +6,7 @@ define({
     HOST:"http://localhost",
     CHAT_MESSAGE:"chatMessage",
     SYSTEM_MESSAGE:"systemMessage",
-    SYSTEM_WELCOME:"systemWelcome"
+    SYSTEM_WELCOME:"systemWelcome",
+    SYSTEM_MESSAGE_CLASS:"systemMessage",
+    USER_MESSAGE_CLASS:"userMessage"
 });

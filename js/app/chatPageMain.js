@@ -2,7 +2,7 @@
  * The main javascript of the chat page.
  * Contains code that pertains to the view.
  */
-require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils"], function(jQuery, pageBuilder, chatConnection, scrollUtils){
+require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "app/constants"], function(jQuery, pageBuilder, chatConnection, scrollUtils, constants){
 
     /**
      * Handles an incoming user message.
@@ -11,7 +11,7 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils"], 
     var onUserMessage = function(data){
 
         //Append a div inside chatField
-        var newLine = jQuery('<div class="userMessage"></div>');
+        var newLine = jQuery('<div class="'+ constants.USER_MESSAGE_CLASS +'"></div>');
         newLine.text(data.message);
         scrollUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
     }
@@ -23,7 +23,7 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils"], 
     var onSystemMessage = function(data){
 
         //Append a div inside chatField
-        var newLine = jQuery('<div class="systemMessage ' + data.type + '"></div>');
+        var newLine = jQuery('<div class="' + constants.SYSTEM_MESSAGE_CLASS+ ' ' + data.type + '"></div>');
         newLine.text(data.message);
         scrollUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
     }
