@@ -4,17 +4,6 @@
 var express = require('express');
 var app = express();
 var socketio = require('socket.io');
-
-
-// requirejs = require('requirejs');
-// requirejs.config({
-//     baseUrl:'js',
-//     //Pass the top-level main.js/index.js require
-//     //function to requirejs so that node modules
-//     //are loaded relative to the top-level JS file.
-//     nodeRequire: require
-// });
-// var constants = requirejs('app/constants');
 var requirejs, constants;
 var chatServer;
 
