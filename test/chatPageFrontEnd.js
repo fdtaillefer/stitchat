@@ -58,6 +58,19 @@ function sendChatLine(driver, text, times, waitForElement){
     return lastPromise;
 }
 
+/**
+ * Asks the driver to wait for an element identified by the locator.
+ * @param driver Driver that should perform the operation.
+ * @param locator A selenium locator that describes how to identify the element to wait for.
+ * @param timeout How long to wait (in milliseconds) before giving up.
+ * @return The promise returned by the invoked driver.wait() function.
+ */
+function waitForElement(driver, locator, timeout){
+    return driver.wait(function() {
+        return driver.isElementPresent(locator);
+    }, timeout);
+}
+
 
 describe('Chat page frontend', function(done){
 
@@ -134,10 +147,8 @@ describe('Chat page frontend', function(done){
 
     it("Should render the page when opening", function(done) {
 
-        //The chat field won't be present if the page hasn't rendered
-        driver.wait(function() {
-            return driver.isElementPresent(chatFieldLocator);
-        }, 1000);
+        //The chat field won't be present if the page hasn't rendered\
+        waitForElement(driver, chatFieldLocator, 1000);
         driver.isElementPresent(chatFieldLocator).then(function(present){
             assert.equal(true, present);
             done();
@@ -147,9 +158,7 @@ describe('Chat page frontend', function(done){
     it("Should greet the user when opening", function(done) {
 
         //Greeting text should appear by itself upon connection
-        driver.wait(function() {
-            return driver.isElementPresent(greetingFieldLocator);
-        }, 1000);
+        waitForElement(driver, greetingFieldLocator, 1000);
         driver.isElementPresent(greetingFieldLocator).then(function(present){
             assert.equal(true, present);
             done();
@@ -161,9 +170,7 @@ describe('Chat page frontend', function(done){
         var textLine = "Line of text";
         sendChatLine(driver, textLine, 1, true);
 
-        driver.wait(function() {
-            return driver.isElementPresent(chatLineLocator);
-        }, 1000);
+        waitForElement(driver, chatLineLocator, 1000);
         driver.findElement(chatLineLocator).getText().then(function(text){
             assert.equal(textLine, text);
             done();
@@ -175,9 +182,7 @@ describe('Chat page frontend', function(done){
         var textLine = "Other line of text";
         sendChatLine(driver2, textLine, 1, true);
 
-        driver.wait(function() {
-            return driver.isElementPresent(chatLineLocator);
-        }, 1000);
+        waitForElement(driver, chatLineLocator, 1000);
         driver.findElement(chatLineLocator).getText().then(function(text){
             assert.equal(textLine, text);
             done();
