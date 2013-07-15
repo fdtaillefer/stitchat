@@ -5,7 +5,7 @@ var webdriver = require('selenium-webdriver');
 
 //We'll have 2 separate windows, so that we can test the behavior between separate windows
 var driver, driver2;
-var server;
+var seleniumServer;
 var chatServer;
 
 var nodeRequire = require;
@@ -85,7 +85,7 @@ describe('Chat page frontend', function(done){
 
         //Start the chat server with WARNING level output and giving it the requirejs we just configured,
         //so that it won't try re-configuring it.
-        chatServer = nodeRequire("../server");
+        chatServer = nodeRequire("../chatServer");
         chatServer.start({logLevel:1, requirejs:require});
 
         //Make sure the selenium server's jar location environment variable has been set and exists
@@ -94,16 +94,16 @@ describe('Chat page frontend', function(done){
         assert.ok(fs.existsSync(jar), 'The specified jar does not exist: ' + jar);
 
         //Start a selenium server
-        server = new SeleniumServer.SeleniumServer({jar: jar});
-        server.start();
+        seleniumServer = new SeleniumServer.SeleniumServer({jar: jar});
+        seleniumServer.start();
 
         //Start 2 browsers, but let's try to make them both start at the same time
         driver = new webdriver.Builder().
-            usingServer(server.address()).
+            usingServer(seleniumServer.address()).
             withCapabilities({'browserName': 'firefox'}).
             build();
         driver2 = new webdriver.Builder().
-            usingServer(server.address()).
+            usingServer(seleniumServer.address()).
             withCapabilities({'browserName': 'firefox'}).
             build();
 
@@ -128,7 +128,7 @@ describe('Chat page frontend', function(done){
                 chatServer.stop();
 
                 //Stop selenium server
-                server.stop().then(function(){
+                seleniumServer.stop().then(function(){
                     done();
                 });
             });

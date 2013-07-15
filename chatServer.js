@@ -16,7 +16,7 @@ var socketio = require('socket.io');
 // });
 // var constants = requirejs('app/constants');
 var requirejs, constants;
-var server;
+var chatServer;
 
 function start(options){
 
@@ -49,7 +49,7 @@ function start(options){
 
 
 
-    server = app.listen(constants.CHAT_PORT);
+    chatServer = app.listen(constants.CHAT_PORT);
 
     //Server should serve client-side js files
     app.use(express.static(__dirname + '/js'));
@@ -60,7 +60,7 @@ function start(options){
     });
 
 
-    var io = socketio.listen(server);
+    var io = socketio.listen(chatServer);
     io.set('log level', options["logLevel"]);
 
     //When a client connects, we want to...
@@ -84,7 +84,7 @@ function start(options){
 }
 
 function stop(){
-    server.close()
+    chatServer.close()
     console.log('Chat server has stopped.');
 }
 

@@ -1,3 +1,3 @@
-var server = require("./server");
+var chatServer = require("./chatServer");
 
-server.start();
+chatServer.start();
