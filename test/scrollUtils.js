@@ -166,7 +166,7 @@ describe('scrollUtils', function(){
         })
     })
 
-    after(function(){
-        _ph.exit();
+    after(function(done){
+        _ph.exit(done);
     })
 })

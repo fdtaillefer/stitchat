@@ -1,4 +1,3 @@
-- Fix scrollUtils test... phantomjs processes remain running which is pretty bad
 - Use requirejs's optimizer?
 - Make the chat work using dust to display messages? Will that require an MVC framework?
 - Fun stuff like actual features
