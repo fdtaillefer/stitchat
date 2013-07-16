@@ -12,82 +12,102 @@ function createUserManager(defaultUsername){
 }
 
 function userManager(defaultUsername){
-    this.socketsByUsername = {};
-    this.defaultUsername = defaultUsername;
+
+    //removeUser's call to usernameExists via a callback causes this to change scope,
+    //and the method to fail. This ensures self always refers to the current scope of this.
+    var self = this;
+    self.socketsByUsername = {};
+    self.defaultUsername = defaultUsername;
 
     /**
      * Removes all existing users from the manager.
      */
     function _clearUsers(){
-        this.socketsByUsername = {};
+        self.socketsByUsername = {};
     }
-    this.clearUsers = _clearUsers;
+    self.clearUsers = _clearUsers;
 
     /**
      * Indicates whether the provided username exists in the user manager.
      * @return
      */
     function _usernameExists(username){
-        return this.socketsByUsername.hasOwnProperty(username);
+        return self.socketsByUsername.hasOwnProperty(username);
     }
-    this.usernameExists = _usernameExists;
+    self.usernameExists = _usernameExists;
 
 
     /**
      * Creates a user for the provided socket, adding it to the internal map
      * and giving it a username.
      * @param socket Socket for which to create a user.
-     * @return The username given to the user.
+     * @param callback Callback that is called after creating the user. It receives the username as a parameter.
      */
-    function _createUser(socket){
-        var username = this.generateUsername();
-        socket.set('username', username);
-        this.socketsByUsername[username] = socket;
-        return username;
+    function _createUser(socket, callback){
+        var username = self.generateUsername();
+        socket.set('username', username, function(){
+            self.socketsByUsername[username] = socket;
+            callback(username);
+        });
     }
-    this.createUser = _createUser;
+    self.createUser = _createUser;
 
     /**
      * Removes the user that corresponds to the provided socket.
      * If no user corresponds to that socket, does nothing.
      * @param socket Socket whose user to remove
-     * @return Whether the user was successfully removed.
+     * @param callback Called after a successful removal. Receives one parameter, the removed username.
+     * @param errback Optional, called with an error message if removal fails.
      */
-    function _removeUser(socket){
-        var username = socket.get('username');
-        if(this.usernameExists(username)){
-            delete this.socketsByUsername[username];
-            return true;
-        }
-        return false;
+    function _removeUser(socket, callback, errback){
+        socket.get('username', function(err, username){
+
+            if(err){
+                if(errback){
+                    errback(err);
+                }
+                return;
+            }
+
+            if(self.usernameExists(username)){
+                delete self.socketsByUsername[username];
+                callback(username);
+            } else {
+                if(errback){
+                    errback("No user associated to socket");
+                }
+            }
+        });
     }
-    this.removeUser = _removeUser;
+    self.removeUser = _removeUser;
 
     /**
      * Attempts to rename a user.
      * If new name is free and socket has a user, user is renamed.
      * @param socket Socket whose user to rename
      * @param newUsername New username to give to the user
-     * @return The removed previous username, or null if operation failed.
+     * @param callback Called in case of success. Receives one parameter, the old username.
+     * @param existsCallback Called if the operation fails specifically because newUsername is already in use.
+     * @param errback Optional, called with an error message in case of unhandled failure.
      */
-    function _renameUser(socket, newUsername){
+    function _renameUser(socket, newUsername, callback, existsCallback, errback){
 
-        //Don't do anything if the new name is already in use
-        if(this.usernameExists(newUsername)){
-            return null;
+        //Call proper callback if the new name is already in use
+        if(self.usernameExists(newUsername)){
+            existsCallback();
+            return;
         }
+
 
         //If name is free, then remove socket's user and add it back with its new name.
-        var username = socket.get('username');
-        if (this.removeUser(socket)){
-            socket.set('username', newUsername);
-            this.socketsByUsername[newUsername] = socket;
-            return username;
-        } else {
-            return null;
-        }
+        self.removeUser(socket, function(oldUsername){
+            socket.set('username', newUsername, function(){
+                self.socketsByUsername[newUsername] = socket;
+                callback(oldUsername);
+            });
+        }, errback);
     }
-    this.renameUser = _renameUser;
+    self.renameUser = _renameUser;
 
     /**
      * Generates an unused username, containing the default username and probably a number.
@@ -96,19 +116,19 @@ function userManager(defaultUsername){
     function _generateUsername(){
         var newUsername;
 
-        if(!this.usernameExists(this.defaultUsername)){
-            newUsername = this.defaultUsername;
+        if(!self.usernameExists(self.defaultUsername)){
+            newUsername = self.defaultUsername;
         } else {
             var i = 2;
-            while(this.usernameExists(this.defaultUsername + i)){
+            while(self.usernameExists(self.defaultUsername + i)){
                 i++;
             }
-            newUsername = this.defaultUsername + i;
+            newUsername = self.defaultUsername + i;
         }
 
         return newUsername;
     }
-    this.generateUsername = _generateUsername;
+    self.generateUsername = _generateUsername;
 
     /**
      * Returns the socket associated with the provided username.
@@ -116,9 +136,9 @@ function userManager(defaultUsername){
      * @return the user's socket, or undefined if there isn't one.
      */
     function _getUserSocket(username){
-        return this.socketsByUsername[username];
+        return self.socketsByUsername[username];
     }
-    this.getUserSocket = _getUserSocket;
+    self.getUserSocket = _getUserSocket;
 
 }
 
