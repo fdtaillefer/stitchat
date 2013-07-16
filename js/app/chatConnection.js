@@ -44,12 +44,12 @@ define(["socketio", "app/constants"], function(io, constants) {
     }
 
     /**
-     * Registers a handler for an incoming system message. This must not be called before connect().
+     * Registers a handler for an incoming system greeting. This must not be called before connect().
      * The handler callback should receive one parameter which is a data object.
      */
-    var onSystemMessage = function(handler){
+    var onSystemGreeting = function(handler){
         ensureConnected();
-        socket.on(constants.SYSTEM_MESSAGE, handler);
+        socket.on(constants.SYSTEM_GREETING, handler);
     }
 
     /**
@@ -73,7 +73,7 @@ define(["socketio", "app/constants"], function(io, constants) {
         "disconnect": disconnect,
         "ensureConnected":ensureConnected,
         "onUserMessage": onUserMessage,
-        "onSystemMessage": onSystemMessage,
+        "onSystemGreeting": onSystemGreeting,
         "outputChatMessage": outputChatMessage
     }
 });

@@ -12,19 +12,25 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
 
         //Append a div inside chatField
         var newLine = jQuery('<div class="'+ constants.USER_MESSAGE_CLASS +'"></div>');
-        newLine.text(data.message);
+        var preamble = jQuery('<span class="' + constants.MESSAGE_PREAMBLE_CLASS + '"></span>');
+        preamble.text(data.username + ': ');
+        var text = jQuery('<span class="' + constants.MESSAGE_TEXT_CLASS + '"></span>');
+        text.text(data.message);
+        newLine.append(preamble, text);
+        //newLine.text(data.message);
         scrollUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
     }
 
     /**
-     * Handles an incoming system message.
+     * Handles an incoming system greeting.
      * @param data object describing the message.
      */
-    var onSystemMessage = function(data){
+    var onSystemGreeting = function(data){
 
         //Append a div inside chatField
-        var newLine = jQuery('<div class="' + constants.SYSTEM_MESSAGE_CLASS+ ' ' + data.type + '"></div>');
-        newLine.text(data.message);
+        var newLine = jQuery('<div class="' + constants.SYSTEM_MESSAGE_CLASS + ' '
+            + constants.SYSTEM_GREETING_CLASS + '"></div>');
+        newLine.text('Hello, ' + data.username + '! Welcome to Stitchat!');
         scrollUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
     }
 
@@ -49,7 +55,7 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
         //Setup event handlers for chat events incoming from server
         chatConnection.connect();
         chatConnection.onUserMessage(onUserMessage);
-        chatConnection.onSystemMessage(onSystemMessage);
+        chatConnection.onSystemGreeting(onSystemGreeting);
 
         //Setup event handlers for graphical components
         jQuery('#sendButton').on('click', function(event){

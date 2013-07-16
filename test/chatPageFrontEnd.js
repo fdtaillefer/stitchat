@@ -23,9 +23,11 @@ var connectionString = constants.HOST + ":" + constants.CHAT_PORT;
 
 var chatFieldLocator = webdriver.By.id("chatField");
 var chatDisplayLocator = webdriver.By.id("chatDisplay");
-var greetingFieldLocator = webdriver.By.className(constants.SYSTEM_MESSAGE_CLASS);
+var greetingFieldLocator = webdriver.By.className(constants.SYSTEM_GREETING_CLASS);
 var sendButtonLocator = webdriver.By.id("sendButton");
 var chatLineLocator = webdriver.By.className(constants.USER_MESSAGE_CLASS);
+var chatTextLocator = webdriver.By.className(constants.MESSAGE_TEXT_CLASS);
+var chatPreambleLocator = webdriver.By.className(constants.MESSAGE_PREAMBLE_CLASS);
 
 
 //Helper functions for testing the chat
@@ -76,12 +78,12 @@ describe('Chat page frontend', function(done){
 
     //If we're working with a real browser, things can sometimes get slow,
     //so we'll give ourselves a bit of leeway
-    this.timeout(4000);
+    this.timeout(5000);
 
     //Starting firefox is just really slow, so we'll start and end it just once.
     before(function(done){
         //Starting this is longer than the default timeout, and duration can vary a lot
-        this.timeout(45000);
+        this.timeout(60000);
 
         //Start the chat server with WARNING level output and giving it the requirejs we just configured,
         //so that it won't try re-configuring it.
@@ -108,11 +110,12 @@ describe('Chat page frontend', function(done){
             build();
 
         //Also load the url once here, because the first time is a lot slower.
-        driverPromise = driver.get(connectionString);
-        driver2Promise = driver2.get(connectionString);
-
-        driverPromise.then(function(){
-            driver2Promise.then(function(){
+        //For consistency's sake, we'll make sure each driver's username
+        //has been attributed before we go on, so we can guarantee who's who.
+        driver.get(connectionString);
+        waitForElement(driver, greetingFieldLocator, 1000).then(function(){
+            driver2.get(connectionString);
+            waitForElement(driver2, greetingFieldLocator, 1000).then(function(){
                 done();
             });
         });
@@ -138,8 +141,13 @@ describe('Chat page frontend', function(done){
     //We'll do a fresh connection to the server before each test
     beforeEach(function(done){
 
-        driver.get(connectionString).then(function(){
-            driver2.get(connectionString).then(function(){
+
+        //For consistency's sake, we'll make sure each driver's username
+        //has been attributed before we go on, so we can guarantee who's who.
+        driver.get(connectionString);
+        waitForElement(driver, greetingFieldLocator, 1000).then(function(){
+            driver2.get(connectionString);
+            waitForElement(driver2, greetingFieldLocator, 1000).then(function(){
                 done();
             });
         });
@@ -150,7 +158,7 @@ describe('Chat page frontend', function(done){
         //The chat field won't be present if the page hasn't rendered\
         waitForElement(driver, chatFieldLocator, 1000);
         driver.isElementPresent(chatFieldLocator).then(function(present){
-            assert.equal(true, present);
+            assert.equal(present, true);
             done();
         });
     });
@@ -160,8 +168,24 @@ describe('Chat page frontend', function(done){
         //Greeting text should appear by itself upon connection
         waitForElement(driver, greetingFieldLocator, 1000);
         driver.isElementPresent(greetingFieldLocator).then(function(present){
-            assert.equal(true, present);
+            assert.equal(present, true);
             done();
+        });
+    });
+
+    it("Should attribute default usernames properly", function(done) {
+
+        //TODO change this test after we've added a field containing current username
+
+        waitForElement(driver, greetingFieldLocator, 1000);
+        driver.findElement(greetingFieldLocator).getText().then(function(text){
+            assert.equal(text.indexOf(constants.DEFAULT_CHAT_USERNAME) > -1, true);
+            assert.equal(text.indexOf(constants.DEFAULT_CHAT_USERNAME + '2') > -1, false);
+            waitForElement(driver2, greetingFieldLocator, 1000);
+            driver2.findElement(greetingFieldLocator).getText().then(function(text2){
+                assert.equal(text2.indexOf(constants.DEFAULT_CHAT_USERNAME + '2') > -1, true);
+                done();
+            });
         });
     });
 
@@ -170,9 +194,22 @@ describe('Chat page frontend', function(done){
         var textLine = "Line of text";
         sendChatLine(driver, textLine, 1, true);
 
-        waitForElement(driver, chatLineLocator, 1000);
-        driver.findElement(chatLineLocator).getText().then(function(text){
-            assert.equal(textLine, text);
+        waitForElement(driver, chatTextLocator, 1000);
+        driver.findElement(chatTextLocator).getText().then(function(text){
+            assert.equal(text, textLine);
+            done();
+        });
+    });
+
+    it("Should display username along with a message", function(done) {
+        var textLine = "Line of text";
+        sendChatLine(driver, textLine, 1, true);
+
+        waitForElement(driver, chatPreambleLocator, 1000);
+        driver.findElement(chatPreambleLocator).getText().then(function(text){
+            //Looks like the reported text value gets trimmed, cause it's actually 'Guest: '.
+            //No matter, it's not what we're checking.
+            assert.equal(text, "Guest:");
             done();
         });
     });
@@ -182,9 +219,9 @@ describe('Chat page frontend', function(done){
         var textLine = "Other line of text";
         sendChatLine(driver2, textLine, 1, true);
 
-        waitForElement(driver, chatLineLocator, 1000);
-        driver.findElement(chatLineLocator).getText().then(function(text){
-            assert.equal(textLine, text);
+        waitForElement(driver, chatTextLocator, 1000);
+        driver.findElement(chatTextLocator).getText().then(function(text){
+            assert.equal(text, textLine);
             done();
         });
     });
@@ -192,8 +229,6 @@ describe('Chat page frontend', function(done){
     it("Should keep chatDisplay scrolled down if it is, or not scrolled down if it's not, after it receives a new message while full", function(done) {
 
         //Normally this would be in two separate tests, but it is a lengthy test to run.
-
-        this.timeout(5000);
 
         var textLine = "Text to fill screen. This is a big line of text because then hopefully "
         + "we can fill out the chat screen in less messages, which should help speed things up "
@@ -213,8 +248,8 @@ describe('Chat page frontend', function(done){
         sendChatLine(driver, textLine, 1, false);
         var executionPromise = driver.executeScript("return arguments[0].scrollTop;", chatDisplay);
         executionPromise.then(function(result){
-            assert.equal(true, shouldScrollScrollTop > 0);
-            assert.equal(0, result);
+            assert.equal(shouldScrollScrollTop > 0, true);
+            assert.equal(result, 0);
             done();
         });
     });

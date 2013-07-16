@@ -108,21 +108,21 @@ describe('chatConnection', function(){
         })
     })
 
-    describe('.onSystemMessage', function(){
+    describe('.onSystemGreeting', function(){
 
         it('Should register the callback on the proper event', function(){
             var callback = function(data){};
 
             chatConnection.connect();
-            chatConnection.onSystemMessage(callback);
+            chatConnection.onSystemGreeting(callback);
 
             assert.equal(onStub.callCount, 1);
-            assert(onStub.calledWith(constants.SYSTEM_MESSAGE, callback));
+            assert(onStub.calledWith(constants.SYSTEM_GREETING, callback));
         })
 
         it('Should throw an error if there is no connection', function(){
             assert.throws(function(){
-                chatConnection.onSystemMessage(function(data){});
+                chatConnection.onSystemGreeting(function(data){});
             });
         })
     })

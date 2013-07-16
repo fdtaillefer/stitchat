@@ -5,7 +5,8 @@ var express = require('express');
 var app = express();
 var socketio = require('socket.io');
 var requirejs, constants;
-var chatServer;
+var chatServer, userManager;
+var userManagerFactory = require("./userManager");
 
 function start(options){
 
@@ -35,7 +36,7 @@ function start(options){
     }
 
     constants = options["requirejs"]('app/constants');
-
+    userManager = userManagerFactory.create(constants.DEFAULT_CHAT_USERNAME);
 
 
     chatServer = app.listen(constants.CHAT_PORT);
@@ -58,18 +59,38 @@ function start(options){
             console.log('A user connected to the chat');
         }
 
-        //Greet the user
-        socket.emit(constants.SYSTEM_MESSAGE, { 'message':'Welcome to stitchat!', 'type':constants.SYSTEM_WELCOME });
+        //Add this user to the user manager
+        userManager.createUser(socket, function(newName){
 
-        //Listen to user for chat messages. Transfer their messages to all sockets
-        socket.on(constants.CHAT_MESSAGE, function (data) {
-            if(options["logLevel"] >= 2){
-                console.log('Received ' + constants.CHAT_MESSAGE + ' from a user: ' + data.message);
-            }
-            io.sockets.emit(constants.CHAT_MESSAGE, data);
+            //Greet the user
+            socket.emit(constants.SYSTEM_GREETING, { 'username':newName });
+
+            //TODO Tell all other users about the new user.
+
+            //Listen to user for chat messages. Transfer their messages to all sockets
+            socket.on(constants.CHAT_MESSAGE, function (data) {
+                if(options["logLevel"] >= 2){
+                    console.log('Received ' + constants.CHAT_MESSAGE + ' from a user: ' + data.message);
+                }
+                socket.get('username', function(err, username){
+                    data.username = username;
+                    io.sockets.emit(constants.CHAT_MESSAGE, data);
+                });
+            });
+
+            //When user disconnects, we want to...
+            socket.on('disconnect', function(){
+                if(options["logLevel"] >= 2){
+                    console.log('A user disconnected from the chat');
+                }
+                userManager.removeUser(socket, function(removedUsername){
+                    //TODO Tell all other users about the user leaving.
+                });
+            });
         });
+
     })
-        console.log('Chat server has started.');
+    console.log('Chat server has started.');
 }
 
 function stop(){
