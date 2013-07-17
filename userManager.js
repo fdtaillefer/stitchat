@@ -98,7 +98,6 @@ function userManager(defaultUsername){
             return;
         }
 
-
         //If name is free, then remove socket's user and add it back with its new name.
         self.removeUser(socket, function(oldUsername){
             socket.set('username', newUsername, function(){

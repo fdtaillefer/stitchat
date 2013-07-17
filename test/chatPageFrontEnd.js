@@ -21,15 +21,27 @@ require.config({
 var constants = require('app/constants');
 var connectionString = constants.HOST + ":" + constants.CHAT_PORT;
 
+//Locators
+
+//Chat feature locators
 var chatFieldLocator = webdriver.By.id("chatField");
 var chatDisplayLocator = webdriver.By.id("chatDisplay");
-var greetingFieldLocator = webdriver.By.className(constants.SYSTEM_GREETING_CLASS);
 var sendButtonLocator = webdriver.By.id("sendButton");
-var currentUsernameFieldLocator = webdriver.By.id("currentUsername");
+var greetingFieldLocator = webdriver.By.className(constants.SYSTEM_GREETING_CLASS);
 var chatLineLocator = webdriver.By.className(constants.USER_MESSAGE_CLASS);
 var chatTextLocator = webdriver.By.className(constants.MESSAGE_TEXT_CLASS);
 var chatPreambleLocator = webdriver.By.className(constants.MESSAGE_PREAMBLE_CLASS);
 
+//Username feature locators
+var beginNameChangeButtonLocator = webdriver.By.id("beginNameChangeButton");
+var confirmNameChangeButtonLocator = webdriver.By.id("confirmNameChangeButton");
+var cancelNameChangeButtonLocator = webdriver.By.id("cancelNameChangeButton");
+var currentUsernameFieldLocator = webdriver.By.id("currentUsernameField");
+var nameConfirmationFieldLocator = webdriver.By.className(constants.USERNAME_CONFIRMATION_CLASS);
+var usernameExistsFieldLocator = webdriver.By.className(constants.USERNAME_EXISTS_CLASS);
+var nameChangeFieldLocator = webdriver.By.id("nameChangeField");
+var nameChangeFormLocator = webdriver.By.id("nameChangeForm");
+var currentUsernameDisplayLocator = webdriver.By.id("currentUsernameDisplay");
 
 //Helper functions for testing the chat
 
@@ -39,14 +51,12 @@ var chatPreambleLocator = webdriver.By.className(constants.MESSAGE_PREAMBLE_CLAS
  * @param driver Driver that should perform the operation.
  * @param text The text to send as a chat line.
  * @param times Number of times to send the text.
- * @param waitForElement Whether to wait for the chat field.
+ * @param waitForChatField Whether to wait for the chat field.
  * @return The promise returned by the last action this method does (so the last click of the button).
  */
-function sendChatLine(driver, text, times, waitForElement){
-    if(waitForElement){
-        driver.wait(function() {
-            return driver.isElementPresent(chatFieldLocator);
-        }, 1000);
+function sendChatLine(driver, text, times, waitForChatField){
+    if(waitForChatField){
+        waitForElement(driver, chatFieldLocator, 1000);
     }
     var chatField = driver.findElement(chatFieldLocator);
     var sendButton = driver.findElement(sendButtonLocator);
@@ -59,6 +69,43 @@ function sendChatLine(driver, text, times, waitForElement){
     }
 
     return lastPromise;
+}
+
+/**
+ * Begins a name change event by clicking on the proper button and waiting for
+ * the form to become visible.
+ * @param driver Driver that should perform the operation
+ */
+function beginNameChange(driver){
+    waitForElement(driver, beginNameChangeButtonLocator, 1000);
+    var button = driver.findElement(beginNameChangeButtonLocator);
+    button.click();
+    waitForElement(driver, nameChangeFormLocator, 1000);
+}
+
+/**
+ * Cancels an in-progress name change event by clicking on the cancel button and waiting for
+ * the current name field to become visible again.
+ * @param driver Driver that should perform the operation
+ */
+function cancelNameChange(driver){
+    var button = driver.findElement(cancelNameChangeButtonLocator);
+    button.click();
+    waitForElement(driver, currentUsernameDisplayLocator, 1000);
+}
+
+/**
+ * Changes current username to newName.
+ * @param driver Driver that should perform the operation
+ * @param newName Username to change to.
+ */
+function changeName(driver, newName){
+    beginNameChange(driver);
+    var field = driver.findElement(nameChangeFieldLocator);
+    field.sendKeys(newName);
+    var button = driver.findElement(confirmNameChangeButtonLocator);
+    button.click();
+    waitForElement(driver, currentUsernameDisplayLocator, 1000);
 }
 
 /**
@@ -187,6 +234,49 @@ describe('Chat page frontend', function(done){
         });
     });
 
+    it("Should acknowledge the user's username when opening", function(done) {
+        //Name confirmation should appear by itself upon connection
+        waitForElement(driver, nameConfirmationFieldLocator, 1000);
+        driver.isElementPresent(nameConfirmationFieldLocator).then(function(present){
+            assert.equal(present, true);
+            done();
+        });
+    });
+
+    it("Should not display the name change form when opening", function(done) {
+        waitForElement(driver, nameChangeFormLocator, 1000);
+        driver.findElement(nameChangeFormLocator).isDisplayed().then(function(displayed){
+            assert.equal(displayed, false);
+            done();
+        });
+
+    });
+
+    it("Should display the name change form after beginning the name change", function(done) {
+        beginNameChange(driver);
+        driver.findElement(nameChangeFormLocator).isDisplayed().then(function(displayed){
+            assert.equal(displayed, true);
+            done();
+        });
+    });
+
+    it("Should not display the username after beginning the name change", function(done) {
+        beginNameChange(driver);
+        driver.findElement(currentUsernameDisplayLocator).isDisplayed().then(function(displayed){
+            assert.equal(displayed, false);
+            done();
+        });
+    });
+
+    it("Should no longer display the name change form after canceling the name change", function(done) {
+        beginNameChange(driver);
+        cancelNameChange(driver);
+        driver.findElement(nameChangeFormLocator).isDisplayed().then(function(displayed){
+            assert.equal(displayed, false);
+            done();
+        });
+    });
+
     it("Should display current user's message after it has been sent", function(done) {
 
         var textLine = "Line of text";
@@ -195,6 +285,15 @@ describe('Chat page frontend', function(done){
         waitForElement(driver, chatTextLocator, 1000);
         driver.findElement(chatTextLocator).getText().then(function(text){
             assert.equal(text, textLine);
+            done();
+        });
+    });
+
+    it("Should not display an empty message", function(done) {
+        var textLine = "";
+        sendChatLine(driver, textLine, 1, true);
+
+        waitForElement(driver, chatTextLocator, 1000).then(null, function(err){
             done();
         });
     });
@@ -248,6 +347,30 @@ describe('Chat page frontend', function(done){
         executionPromise.then(function(result){
             assert.equal(shouldScrollScrollTop > 0, true);
             assert.equal(result, 0);
+            done();
+        });
+    });
+
+    it("Should change a user's name ***TODO***", function(done) {
+        changeName(driver, "ChangedName");
+
+        var textLine = "Line of text";
+        sendChatLine(driver, textLine, 1, true);
+
+        waitForElement(driver, chatPreambleLocator, 1000);
+        driver.findElement(chatPreambleLocator).getText().then(function(text){
+            //Looks like the reported text value gets trimmed, cause it's actually 'ChangedName: '.
+            //No matter, it's not what we're checking.
+            assert.equal(text, "ChangedName:");
+            done();
+        });
+    });
+
+    it("Should tell user if their name change is invalid because name exists", function(done) {
+        changeName(driver, "Guest2");
+        waitForElement(driver, usernameExistsFieldLocator, 1000);
+        driver.isElementPresent(usernameExistsFieldLocator).then(function(present){
+            assert.equal(present, true);
             done();
         });
     });

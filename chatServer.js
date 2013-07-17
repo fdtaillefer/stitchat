@@ -41,8 +41,11 @@ function start(options){
 
     chatServer = app.listen(constants.CHAT_PORT);
 
-    //Server should serve client-side js files
+    //Server should serve client-side js files from the js folder
     app.use(express.static(__dirname + '/js'));
+
+    //Server should serve client-side css files from the css folder
+    app.use(express.static(__dirname + '/css'));
 
     //Setup default behavior
     app.get("/", function(req, res){
@@ -62,11 +65,11 @@ function start(options){
         //Add this user to the user manager
         userManager.createUser(socket, function(newName){
 
-            //Confirm the username to the user
-            socket.emit(constants.SYSTEM_USERNAME_CONFIRMATION, { 'username':newName });
-
             //Greet the user
             socket.emit(constants.SYSTEM_GREETING, { 'username':newName });
+
+            //Confirm the username to the user
+            socket.emit(constants.SYSTEM_USERNAME_CONFIRMATION, { 'username':newName });
 
             //TODO Tell all other users about the new user.
 
@@ -80,6 +83,33 @@ function start(options){
                     io.sockets.emit(constants.CHAT_MESSAGE, data);
                 });
             });
+
+            //Listen to user for name changes.
+            socket.on(constants.NAME_CHANGE, function(data){
+                if(options["logLevel"] >= 2){
+                    console.log('Received ' + constants.NAME_CHANGE + ' from a user: ' + data.username);
+                }
+
+                socket.get('username', function(err, oldName){
+
+                    //If old and new name are the same, ignore the request. No need for feedback.
+                    if(oldName === data.username){
+                        return;
+                    }
+
+                    userManager.renameUser(socket, data.username, function(oldUsername){
+                        //Confirm the username to the user
+                        socket.emit(constants.SYSTEM_USERNAME_CONFIRMATION, { 'username':data.username });
+
+                        //TODO tell all other users about the name change
+                    }, function(){
+
+                        //Tell user the new name exists
+                        socket.emit(constants.SYSTEM_USERNAME_EXISTS, { 'username':data.username });
+                    }, function(){});
+                });
+
+            })
 
             //When user disconnects, we want to...
             socket.on('disconnect', function(){

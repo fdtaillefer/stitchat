@@ -146,6 +146,25 @@ describe('chatConnection', function(){
         })
     })
 
+    describe('.onUsernameExists', function(){
+
+        it('Should register the callback on the proper event', function(){
+            var callback = function(data){};
+
+            chatConnection.connect();
+            chatConnection.onUsernameExists(callback);
+
+            assert.equal(onStub.callCount, 1);
+            assert(onStub.calledWith(constants.SYSTEM_USERNAME_EXISTS, callback));
+        })
+
+        it('Should throw an error if there is no connection', function(){
+            assert.throws(function(){
+                chatConnection.onUsernameExists(function(data){});
+            });
+        })
+    })
+
     describe('.outputChatMessage', function(){
 
         it('Should send an event containing the message', function(){
@@ -161,4 +180,19 @@ describe('chatConnection', function(){
             });
         })
     })
+
+    describe('.outputNameChange', function(){
+        it('Should send an event containing the new name', function(){
+            chatConnection.connect();
+            chatConnection.outputNameChange("NewName");
+            assert.equal(emitStub.callCount, 1);
+            assert(emitStub.calledWith(constants.NAME_CHANGE, {"username":"NewName"}));
+        })
+
+        it('Should throw an error if there is no connection', function(){
+            assert.throws(function(){
+                chatConnection.outputNameChange("NewName");
+            });
+        })
+    });
 })

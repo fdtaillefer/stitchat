@@ -1,0 +1,25 @@
+.hidden {
+    display:none;
+}
+
+.systemMessage {
+    font-style:italic;
+    color:#36DBFC;
+}
+
+#chatDisplay {
+    width: 500px;
+    height: 300px;
+    margin: 0 0 20px 0;
+    border: solid 1px #999;
+    overflow-y: scroll;
+}
+
+#chatField {
+    width: 400px;
+}
+
+#currentUsernameField {
+    line-height: 1ex;
+    height: 1.2ex
+}

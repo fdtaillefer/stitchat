@@ -8,9 +8,13 @@ define({
     CHAT_MESSAGE:"chatMessage",
     SYSTEM_GREETING:"systemGreeting",
     SYSTEM_USERNAME_CONFIRMATION:"systemUsernameConfirmation",
+    SYSTEM_USERNAME_EXISTS:"systemUsernameExists",
+    NAME_CHANGE:"nameChange",
 
     SYSTEM_MESSAGE_CLASS:"systemMessage",
     SYSTEM_GREETING_CLASS:"systemMessage",
+    USERNAME_CONFIRMATION_CLASS:"usernameConfirmation",
+    USERNAME_EXISTS_CLASS:"usernameExists",
     USER_MESSAGE_CLASS:"userMessage",
     MESSAGE_PREAMBLE_CLASS:"messagePreamble",
     MESSAGE_TEXT_CLASS:"messageText",
