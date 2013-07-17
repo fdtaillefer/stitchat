@@ -7,6 +7,7 @@ define({
 
     CHAT_MESSAGE:"chatMessage",
     SYSTEM_GREETING:"systemGreeting",
+    SYSTEM_USERNAME_CONFIRMATION:"systemUsernameConfirmation",
 
     SYSTEM_MESSAGE_CLASS:"systemMessage",
     SYSTEM_GREETING_CLASS:"systemMessage",

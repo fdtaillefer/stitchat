@@ -53,6 +53,16 @@ define(["socketio", "app/constants"], function(io, constants) {
     }
 
     /**
+     * Registers a handler for an incoming username confirmation from the system.
+     * This must not be called before connect();
+     * The handler callback should receive one parameter which is a data object.
+     */
+    var onUsernameConfirmation = function(handler){
+        ensureConnected();
+        socket.on(constants.SYSTEM_USERNAME_CONFIRMATION, handler);
+    }
+
+    /**
      * Sends a chat message to the chat server. This must not be called before connect().
      * @param message The actual text of the message
      */
@@ -74,6 +84,7 @@ define(["socketio", "app/constants"], function(io, constants) {
         "ensureConnected":ensureConnected,
         "onUserMessage": onUserMessage,
         "onSystemGreeting": onSystemGreeting,
+        "onUsernameConfirmation": onUsernameConfirmation,
         "outputChatMessage": outputChatMessage
     }
 });

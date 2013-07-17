@@ -62,6 +62,9 @@ function start(options){
         //Add this user to the user manager
         userManager.createUser(socket, function(newName){
 
+            //Confirm the username to the user
+            socket.emit(constants.SYSTEM_USERNAME_CONFIRMATION, { 'username':newName });
+
             //Greet the user
             socket.emit(constants.SYSTEM_GREETING, { 'username':newName });
 

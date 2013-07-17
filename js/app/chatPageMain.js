@@ -17,7 +17,6 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
         var text = jQuery('<span class="' + constants.MESSAGE_TEXT_CLASS + '"></span>');
         text.text(data.message);
         newLine.append(preamble, text);
-        //newLine.text(data.message);
         scrollUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
     }
 
@@ -32,6 +31,14 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
             + constants.SYSTEM_GREETING_CLASS + '"></div>');
         newLine.text('Hello, ' + data.username + '! Welcome to Stitchat!');
         scrollUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
+    }
+
+    /**
+     * Handles an incoming confirmation of current user's username
+     */
+    var onUsernameConfirmation = function(data){
+        var usernameDisplayField = jQuery('#currentUsername');
+        usernameDisplayField.text(data.username);
     }
 
     /**
@@ -56,6 +63,7 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
         chatConnection.connect();
         chatConnection.onUserMessage(onUserMessage);
         chatConnection.onSystemGreeting(onSystemGreeting);
+        chatConnection.onUsernameConfirmation(onUsernameConfirmation);
 
         //Setup event handlers for graphical components
         jQuery('#sendButton').on('click', function(event){

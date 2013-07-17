@@ -25,6 +25,7 @@ var chatFieldLocator = webdriver.By.id("chatField");
 var chatDisplayLocator = webdriver.By.id("chatDisplay");
 var greetingFieldLocator = webdriver.By.className(constants.SYSTEM_GREETING_CLASS);
 var sendButtonLocator = webdriver.By.id("sendButton");
+var currentUsernameFieldLocator = webdriver.By.id("currentUsername");
 var chatLineLocator = webdriver.By.className(constants.USER_MESSAGE_CLASS);
 var chatTextLocator = webdriver.By.className(constants.MESSAGE_TEXT_CLASS);
 var chatPreambleLocator = webdriver.By.className(constants.MESSAGE_PREAMBLE_CLASS);
@@ -173,17 +174,14 @@ describe('Chat page frontend', function(done){
         });
     });
 
-    it("Should attribute default usernames properly", function(done) {
+    it("Should attribute default usernames properly and display them in currentUsername field", function(done) {
 
-        //TODO change this test after we've added a field containing current username
-
-        waitForElement(driver, greetingFieldLocator, 1000);
-        driver.findElement(greetingFieldLocator).getText().then(function(text){
-            assert.equal(text.indexOf(constants.DEFAULT_CHAT_USERNAME) > -1, true);
-            assert.equal(text.indexOf(constants.DEFAULT_CHAT_USERNAME + '2') > -1, false);
-            waitForElement(driver2, greetingFieldLocator, 1000);
-            driver2.findElement(greetingFieldLocator).getText().then(function(text2){
-                assert.equal(text2.indexOf(constants.DEFAULT_CHAT_USERNAME + '2') > -1, true);
+        waitForElement(driver, currentUsernameFieldLocator, 1000);
+        driver.findElement(currentUsernameFieldLocator).getText().then(function(text){
+            assert.equal(text, "Guest");
+            waitForElement(driver2, currentUsernameFieldLocator, 1000);
+            driver2.findElement(currentUsernameFieldLocator).getText().then(function(text2){
+                assert.equal(text2, "Guest2");
                 done();
             });
         });
