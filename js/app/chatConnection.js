@@ -73,6 +73,16 @@ define(["socketio", "app/constants"], function(io, constants) {
     }
 
     /**
+     * Registers a handler for an incoming message that a user has joined the chat.
+     * This must not be called before connect();
+     * The handler callback should receive one parameter which is a data object.
+     */
+    var onUserJoin = function(handler){
+        ensureConnected();
+        socket.on(constants.SYSTEM_USER_JOIN, handler);
+    }
+
+    /**
      * Sends a chat message to the chat server. This must not be called before connect().
      * @param message The actual text of the message
      */
@@ -108,6 +118,7 @@ define(["socketio", "app/constants"], function(io, constants) {
         "onSystemGreeting": onSystemGreeting,
         "onUsernameConfirmation": onUsernameConfirmation,
         "onUsernameExists": onUsernameExists,
+        "onUserJoin": onUserJoin,
         "outputChatMessage": outputChatMessage,
         "outputNameChange": outputNameChange
     }

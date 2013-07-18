@@ -5,6 +5,24 @@
 require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "app/constants"], function(jQuery, pageBuilder, chatConnection, scrollUtils, constants){
 
     /**
+     * Appends a system message. The message will have the SYSTEM_MESSAGE_CLASS
+     * as well as any other found in classes.
+     * @text Text of the system message
+     * @classes A list of additional classes that the element should have.
+     */
+    function appendSystemMessage(text, classes){
+        var otherClasses = '';
+        for(var i = 0; i < classes.length; i++){
+            otherClasses += ' ' + classes[i];
+        }
+
+        var newLine = jQuery('<div class="' + constants.SYSTEM_MESSAGE_CLASS
+            + otherClasses + '"></div>');
+        newLine.text(text);
+        scrollUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
+    }
+
+    /**
      * Handles an incoming user message.
      * @param data object describing the message.
      */
@@ -25,25 +43,16 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
      * @param data object describing the message.
      */
     var onSystemGreeting = function(data){
-
-        //Append a div inside chatField
-        var newLine = jQuery('<div class="' + constants.SYSTEM_MESSAGE_CLASS + ' '
-            + constants.SYSTEM_GREETING_CLASS + '"></div>');
-        newLine.text('Hello! Welcome to Stitchat!');
-        scrollUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
+        appendSystemMessage('Hello! Welcome to Stitchat!', [constants.SYSTEM_GREETING_CLASS]);
     }
 
     /**
      * Handles an incoming confirmation of current user's username
      */
     var onUsernameConfirmation = function(data){
-        //Append a div inside chatField
-        var newLine = jQuery('<div class="' + constants.SYSTEM_MESSAGE_CLASS + ' '
-            + constants.USERNAME_CONFIRMATION_CLASS + '"></div>');
-        newLine.text('You are now known as ' + data.username);
-        scrollUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
+        appendSystemMessage('You are now known as ' + data.username + '.', [constants.USERNAME_CONFIRMATION_CLASS]);
 
-        //Update field that displays the username
+        //Update the field that displays the username
         var usernameDisplayField = jQuery('#currentUsernameField');
         usernameDisplayField.text(data.username);
     }
@@ -52,11 +61,16 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
      * Handles an incoming message that a name change failed because the name already exists.
      */
     var onUsernameExists = function(data){
-        //Append a div inside chatField
-        var newLine = jQuery('<div class="' + constants.SYSTEM_MESSAGE_CLASS + ' '
-            + constants.USERNAME_EXISTS_CLASS + '"></div>');
-        newLine.text('Could not change names. The name ' + data.username + ' is already in use.');
-        scrollUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
+        appendSystemMessage('Could not change names. The name ' + data.username + ' is already in use.',
+            [constants.USERNAME_EXISTS_CLASS]);
+    }
+
+    /**
+     * Handles an incoming message that a user has joined the chat.
+     */
+    var onUserJoin = function(data){
+        appendSystemMessage(data.username + ' has joined the chat.',
+            [constants.USER_JOINED_CLASS]);
     }
 
     /**
@@ -130,6 +144,7 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
         chatConnection.onSystemGreeting(onSystemGreeting);
         chatConnection.onUsernameConfirmation(onUsernameConfirmation);
         chatConnection.onUsernameExists(onUsernameExists);
+        chatConnection.onUserJoin(onUserJoin);
 
         //Setup event handlers for graphical components
         jQuery('#sendButton').on('click', function(event){

@@ -31,6 +31,7 @@ var greetingFieldLocator = webdriver.By.className(constants.SYSTEM_GREETING_CLAS
 var chatLineLocator = webdriver.By.className(constants.USER_MESSAGE_CLASS);
 var chatTextLocator = webdriver.By.className(constants.MESSAGE_TEXT_CLASS);
 var chatPreambleLocator = webdriver.By.className(constants.MESSAGE_PREAMBLE_CLASS);
+var userJoinedFieldLocator = webdriver.By.className(constants.USER_JOINED_CLASS);
 
 //Username feature locators
 var beginNameChangeButtonLocator = webdriver.By.id("beginNameChangeButton");
@@ -121,6 +122,39 @@ function waitForElement(driver, locator, timeout){
     }, timeout);
 }
 
+/**
+ * A helper function for tests whose final assertion is an element's presence.
+ * This method should be the final call in those tests, and will ultimately
+ * pass or fail the test based on the element's presence.
+ * @param driver Driver that should perform the test
+ * @param locator Locator to find the element
+ * @param timeout Time (in milliseconds) to wait for the element to appear
+ * @param done The test's done callback
+ */
+function ensurePresent(driver, locator, timeout, done){
+    waitForElement(driver, locator, timeout);
+    driver.isElementPresent(chatFieldLocator).then(function(present){
+        assert.equal(present, true);
+        done();
+    });
+}
+
+/**
+ * A helper function for tests whose final assertion is an element's absence.
+ * This method should be the final call in those tests, and will ultimately
+ * pass or fail the test based on the element's absence.
+ * If the element is absent, the test will fail due to never calling done() and timing out.
+ * @param driver Driver that should perform the test
+ * @param locator Locator to find the element
+ * @param timeout Time (in milliseconds) to wait for the element to appear
+ * @param done The test's done callback
+ */
+function ensureAbsent(driver, locator, timeout, done){
+    waitForElement(driver, locator, timeout).then(null, function(err){
+        done();
+    });
+}
+
 
 describe('Chat page frontend', function(done){
 
@@ -201,177 +235,178 @@ describe('Chat page frontend', function(done){
         });
     });
 
-    it("Should render the page when opening", function(done) {
+    describe('general behavior', function(){
+        it("Should render the page when opening", function(done) {
 
-        //The chat field won't be present if the page hasn't rendered\
-        waitForElement(driver, chatFieldLocator, 1000);
-        driver.isElementPresent(chatFieldLocator).then(function(present){
-            assert.equal(present, true);
-            done();
+            //The chat field won't be present if the page hasn't rendered.
+            ensurePresent(driver, chatFieldLocator, 1000, done);
+        });
+
+        it("Should greet the user when opening", function(done) {
+
+            //Greeting text should appear by itself upon connection
+            ensurePresent(driver, greetingFieldLocator, 1000, done);
+        });
+
+        it("Should tell other users when someone joins", function(done) {
+            //Message indicating second user's arrival should be there
+            ensurePresent(driver, userJoinedFieldLocator, 1000, done);
+        });
+
+        it("Should not tell a user that they themselves joined", function(done) {
+            //Message indicating second user's arrival shouldn't be there for second user
+            ensureAbsent(driver2, userJoinedFieldLocator, 1000, done);
         });
     });
 
-    it("Should greet the user when opening", function(done) {
+    describe('chat message', function(){
+        it("Should display current user's message after it has been sent", function(done) {
 
-        //Greeting text should appear by itself upon connection
-        waitForElement(driver, greetingFieldLocator, 1000);
-        driver.isElementPresent(greetingFieldLocator).then(function(present){
-            assert.equal(present, true);
-            done();
+            var textLine = "Line of text";
+            sendChatLine(driver, textLine, 1, true);
+
+            waitForElement(driver, chatTextLocator, 1000);
+            driver.findElement(chatTextLocator).getText().then(function(text){
+                assert.equal(text, textLine);
+                done();
+            });
         });
-    });
 
-    it("Should attribute default usernames properly and display them in currentUsername field", function(done) {
+        it("Should not display an empty message", function(done) {
+            var textLine = "";
+            sendChatLine(driver, textLine, 1, true);
 
-        waitForElement(driver, currentUsernameFieldLocator, 1000);
-        driver.findElement(currentUsernameFieldLocator).getText().then(function(text){
-            assert.equal(text, "Guest");
-            waitForElement(driver2, currentUsernameFieldLocator, 1000);
-            driver2.findElement(currentUsernameFieldLocator).getText().then(function(text2){
-                assert.equal(text2, "Guest2");
+            ensureAbsent(driver, chatTextLocator, 1000, done);
+        });
+
+        it("Should display username along with a message", function(done) {
+            var textLine = "Line of text";
+            sendChatLine(driver, textLine, 1, true);
+
+            waitForElement(driver, chatPreambleLocator, 1000);
+            driver.findElement(chatPreambleLocator).getText().then(function(text){
+                //Looks like the reported text value gets trimmed, cause it's actually 'Guest: '.
+                //No matter, it's not what we're checking.
+                assert.equal(text, "Guest:");
+                done();
+            });
+        });
+
+        it("Should display another user's message after it has been sent", function(done) {
+
+            var textLine = "Other line of text";
+            sendChatLine(driver2, textLine, 1, true);
+
+            waitForElement(driver, chatTextLocator, 1000);
+            driver.findElement(chatTextLocator).getText().then(function(text){
+                assert.equal(text, textLine);
                 done();
             });
         });
     });
 
-    it("Should acknowledge the user's username when opening", function(done) {
-        //Name confirmation should appear by itself upon connection
-        waitForElement(driver, nameConfirmationFieldLocator, 1000);
-        driver.isElementPresent(nameConfirmationFieldLocator).then(function(present){
-            assert.equal(present, true);
-            done();
+    describe('general display', function(){
+        it("Should keep chatDisplay scrolled down if it is, or not scrolled down if it's not, after it receives a new message while full", function(done) {
+
+            //Normally this would be in two separate tests, but it is a lengthy test to run.
+
+            var textLine = "Text to fill screen. This is a big line of text because then hopefully "
+            + "we can fill out the chat screen in less messages, which should help speed things up "
+            + "and help us test the scroll behavior faster";
+            sendChatLine(driver, textLine, 1, true);
+            sendChatLine(driver, textLine, 5, false);
+
+            chatDisplay = driver.findElement(chatDisplayLocator);
+
+            var shouldScrollScrollTop;
+            driver.executeScript("return arguments[0].scrollTop;", chatDisplay).then(function(result){
+                shouldScrollScrollTop = result;
+            });
+
+            chatDisplay.click();
+            chatDisplay.sendKeys(webdriver.Key.HOME);
+            sendChatLine(driver, textLine, 1, false);
+            var executionPromise = driver.executeScript("return arguments[0].scrollTop;", chatDisplay);
+            executionPromise.then(function(result){
+                assert.equal(shouldScrollScrollTop > 0, true);
+                assert.equal(result, 0);
+                done();
+            });
         });
     });
 
-    it("Should not display the name change form when opening", function(done) {
-        waitForElement(driver, nameChangeFormLocator, 1000);
-        driver.findElement(nameChangeFormLocator).isDisplayed().then(function(displayed){
-            assert.equal(displayed, false);
-            done();
+    describe('username', function(){
+
+        it("Should attribute default usernames properly and display them in currentUsername field", function(done) {
+
+            waitForElement(driver, currentUsernameFieldLocator, 1000);
+            driver.findElement(currentUsernameFieldLocator).getText().then(function(text){
+                assert.equal(text, "Guest");
+                waitForElement(driver2, currentUsernameFieldLocator, 1000);
+                driver2.findElement(currentUsernameFieldLocator).getText().then(function(text2){
+                    assert.equal(text2, "Guest2");
+                    done();
+                });
+            });
         });
 
-    });
+        it("Should change a user's name", function(done) {
+            changeName(driver, "ChangedName");
 
-    it("Should display the name change form after beginning the name change", function(done) {
-        beginNameChange(driver);
-        driver.findElement(nameChangeFormLocator).isDisplayed().then(function(displayed){
-            assert.equal(displayed, true);
-            done();
-        });
-    });
+            var textLine = "Line of text";
+            sendChatLine(driver, textLine, 1, true);
 
-    it("Should not display the username after beginning the name change", function(done) {
-        beginNameChange(driver);
-        driver.findElement(currentUsernameDisplayLocator).isDisplayed().then(function(displayed){
-            assert.equal(displayed, false);
-            done();
-        });
-    });
-
-    it("Should no longer display the name change form after canceling the name change", function(done) {
-        beginNameChange(driver);
-        cancelNameChange(driver);
-        driver.findElement(nameChangeFormLocator).isDisplayed().then(function(displayed){
-            assert.equal(displayed, false);
-            done();
-        });
-    });
-
-    it("Should display current user's message after it has been sent", function(done) {
-
-        var textLine = "Line of text";
-        sendChatLine(driver, textLine, 1, true);
-
-        waitForElement(driver, chatTextLocator, 1000);
-        driver.findElement(chatTextLocator).getText().then(function(text){
-            assert.equal(text, textLine);
-            done();
-        });
-    });
-
-    it("Should not display an empty message", function(done) {
-        var textLine = "";
-        sendChatLine(driver, textLine, 1, true);
-
-        waitForElement(driver, chatTextLocator, 1000).then(null, function(err){
-            done();
-        });
-    });
-
-    it("Should display username along with a message", function(done) {
-        var textLine = "Line of text";
-        sendChatLine(driver, textLine, 1, true);
-
-        waitForElement(driver, chatPreambleLocator, 1000);
-        driver.findElement(chatPreambleLocator).getText().then(function(text){
-            //Looks like the reported text value gets trimmed, cause it's actually 'Guest: '.
-            //No matter, it's not what we're checking.
-            assert.equal(text, "Guest:");
-            done();
-        });
-    });
-
-    it("Should display another user's message after it has been sent", function(done) {
-
-        var textLine = "Other line of text";
-        sendChatLine(driver2, textLine, 1, true);
-
-        waitForElement(driver, chatTextLocator, 1000);
-        driver.findElement(chatTextLocator).getText().then(function(text){
-            assert.equal(text, textLine);
-            done();
-        });
-    });
-
-    it("Should keep chatDisplay scrolled down if it is, or not scrolled down if it's not, after it receives a new message while full", function(done) {
-
-        //Normally this would be in two separate tests, but it is a lengthy test to run.
-
-        var textLine = "Text to fill screen. This is a big line of text because then hopefully "
-        + "we can fill out the chat screen in less messages, which should help speed things up "
-        + "and help us test the scroll behavior faster";
-        sendChatLine(driver, textLine, 1, true);
-        sendChatLine(driver, textLine, 5, false);
-
-        chatDisplay = driver.findElement(chatDisplayLocator);
-
-        var shouldScrollScrollTop;
-        driver.executeScript("return arguments[0].scrollTop;", chatDisplay).then(function(result){
-            shouldScrollScrollTop = result;
+            waitForElement(driver, chatPreambleLocator, 1000);
+            driver.findElement(chatPreambleLocator).getText().then(function(text){
+                //Looks like the reported text value gets trimmed, cause it's actually 'ChangedName: '.
+                //No matter, it's not what we're checking.
+                assert.equal(text, "ChangedName:");
+                done();
+            });
         });
 
-        chatDisplay.click();
-        chatDisplay.sendKeys(webdriver.Key.HOME);
-        sendChatLine(driver, textLine, 1, false);
-        var executionPromise = driver.executeScript("return arguments[0].scrollTop;", chatDisplay);
-        executionPromise.then(function(result){
-            assert.equal(shouldScrollScrollTop > 0, true);
-            assert.equal(result, 0);
-            done();
+        it("Should tell user if their name change is invalid because name exists", function(done) {
+            changeName(driver, "Guest2");
+            ensurePresent(driver, usernameExistsFieldLocator, 1000, done);
         });
-    });
 
-    it("Should change a user's name", function(done) {
-        changeName(driver, "ChangedName");
-
-        var textLine = "Line of text";
-        sendChatLine(driver, textLine, 1, true);
-
-        waitForElement(driver, chatPreambleLocator, 1000);
-        driver.findElement(chatPreambleLocator).getText().then(function(text){
-            //Looks like the reported text value gets trimmed, cause it's actually 'ChangedName: '.
-            //No matter, it's not what we're checking.
-            assert.equal(text, "ChangedName:");
-            done();
+        it("Should acknowledge the user's username when opening", function(done) {
+            //Name confirmation should appear by itself upon connection
+            ensurePresent(driver, nameConfirmationFieldLocator, 1000, done);
         });
-    });
 
-    it("Should tell user if their name change is invalid because name exists", function(done) {
-        changeName(driver, "Guest2");
-        waitForElement(driver, usernameExistsFieldLocator, 1000);
-        driver.isElementPresent(usernameExistsFieldLocator).then(function(present){
-            assert.equal(present, true);
-            done();
+        it("Should not display the name change form when opening", function(done) {
+            waitForElement(driver, nameChangeFormLocator, 1000);
+            driver.findElement(nameChangeFormLocator).isDisplayed().then(function(displayed){
+                assert.equal(displayed, false);
+                done();
+            });
+
+        });
+
+        it("Should display the name change form after beginning the name change", function(done) {
+            beginNameChange(driver);
+            driver.findElement(nameChangeFormLocator).isDisplayed().then(function(displayed){
+                assert.equal(displayed, true);
+                done();
+            });
+        });
+
+        it("Should not display the username after beginning the name change", function(done) {
+            beginNameChange(driver);
+            driver.findElement(currentUsernameDisplayLocator).isDisplayed().then(function(displayed){
+                assert.equal(displayed, false);
+                done();
+            });
+        });
+
+        it("Should no longer display the name change form after canceling the name change", function(done) {
+            beginNameChange(driver);
+            cancelNameChange(driver);
+            driver.findElement(nameChangeFormLocator).isDisplayed().then(function(displayed){
+                assert.equal(displayed, false);
+                done();
+            });
         });
     });
 })

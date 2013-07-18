@@ -68,10 +68,12 @@ function start(options){
             //Greet the user
             socket.emit(constants.SYSTEM_GREETING, { 'username':newName });
 
+            //Tell all other users about the new user.
+            socket.broadcast.emit(constants.SYSTEM_USER_JOIN, { 'username':newName });
+
             //Confirm the username to the user
             socket.emit(constants.SYSTEM_USERNAME_CONFIRMATION, { 'username':newName });
 
-            //TODO Tell all other users about the new user.
 
             //Listen to user for chat messages. Transfer their messages to all sockets
             socket.on(constants.CHAT_MESSAGE, function (data) {
