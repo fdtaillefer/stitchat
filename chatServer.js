@@ -103,7 +103,9 @@ function start(options){
                         //Confirm the username to the user
                         socket.emit(constants.SYSTEM_USERNAME_CONFIRMATION, { 'username':data.username });
 
-                        //TODO tell all other users about the name change
+                        //Tell all other users about the name change
+                        socket.broadcast.emit(constants.SYSTEM_USER_RENAME,
+                            { 'oldUsername':oldUsername, 'newUsername':data.username });
                     }, function(){
 
                         //Tell user the new name exists

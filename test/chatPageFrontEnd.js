@@ -33,6 +33,7 @@ var chatTextLocator = webdriver.By.className(constants.MESSAGE_TEXT_CLASS);
 var chatPreambleLocator = webdriver.By.className(constants.MESSAGE_PREAMBLE_CLASS);
 var userJoinedFieldLocator = webdriver.By.className(constants.USER_JOINED_CLASS);
 var userLeftFieldLocator = webdriver.By.className(constants.USER_LEFT_CLASS);
+var userRenamedFieldLocator = webdriver.By.className(constants.USER_RENAMED_CLASS);
 
 //Username feature locators
 var beginNameChangeButtonLocator = webdriver.By.id("beginNameChangeButton");
@@ -416,6 +417,18 @@ describe('Chat page frontend', function(done){
                 assert.equal(displayed, false);
                 done();
             });
+        });
+
+        it("Should tell other users when someone changes their name", function(done) {
+            //Message indicating second user's rename should be there
+            changeName(driver2, 'newName');
+            ensurePresent(driver, userRenamedFieldLocator, 1000, done);
+        });
+
+        it("Should not give a user the third person message when they changed their name", function(done) {
+            //(Third person) message indicating second user's rename shouldn't be there for second user
+            changeName(driver2, 'newName');
+            ensureAbsent(driver2, userRenamedFieldLocator, 1000, done);
         });
     });
 })

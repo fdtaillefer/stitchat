@@ -23,10 +23,10 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
     }
 
     /**
-     * Handles an incoming user message.
+     * Handles an incoming event of a chat message.
      * @param data object describing the message.
      */
-    var onUserMessage = function(data){
+    var onChatMessage = function(data){
 
         //Append a div inside chatField
         var newLine = jQuery('<div class="'+ constants.USER_MESSAGE_CLASS +'"></div>');
@@ -39,7 +39,7 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
     }
 
     /**
-     * Handles an incoming system greeting.
+     * Handles an incoming event of a system greeting.
      * @param data object describing the message.
      */
     var onSystemGreeting = function(data){
@@ -47,7 +47,8 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
     }
 
     /**
-     * Handles an incoming confirmation of current user's username
+     * Handles an incoming event that a name change succeeded.
+     * @param data object describing the message.
      */
     var onUsernameConfirmation = function(data){
         appendSystemMessage('You are now known as ' + data.username + '.', [constants.USERNAME_CONFIRMATION_CLASS]);
@@ -58,7 +59,8 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
     }
 
     /**
-     * Handles an incoming message that a name change failed because the name already exists.
+     * Handles an incoming event that a name change failed because the name already exists.
+     * @param data object describing the message.
      */
     var onUsernameExists = function(data){
         appendSystemMessage('Could not change names. The name ' + data.username + ' is already in use.',
@@ -66,7 +68,8 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
     }
 
     /**
-     * Handles an incoming message that a user has joined the chat.
+     * Handles an incoming event that a user has joined the chat.
+     * @param data object describing the message.
      */
     var onUserJoin = function(data){
         appendSystemMessage(data.username + ' has joined the chat.',
@@ -74,11 +77,21 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
     }
 
     /**
-     * Handles an incoming message that a user has left the chat.
+     * Handles an incoming event that a user has left the chat.
+     * @param data object describing the message.
      */
     var onUserLeave = function(data){
         appendSystemMessage(data.username + ' has left the chat.',
             [constants.USER_LEFT_CLASS]);
+    }
+
+    /**
+     * Handles an incoming event that a user has changed their name.
+     * @param data object describing the message.
+     */
+    var onUserRename = function(data){
+        appendSystemMessage(data.oldUsername + ' is now known as ' + data.newUsername + '.',
+            [constants.USER_RENAMED_CLASS]);
     }
 
     /**
@@ -148,12 +161,13 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
 
         //Setup event handlers for chat events incoming from server
         chatConnection.connect();
-        chatConnection.onUserMessage(onUserMessage);
+        chatConnection.onChatMessage(onChatMessage);
         chatConnection.onSystemGreeting(onSystemGreeting);
         chatConnection.onUsernameConfirmation(onUsernameConfirmation);
         chatConnection.onUsernameExists(onUsernameExists);
         chatConnection.onUserJoin(onUserJoin);
         chatConnection.onUserLeave(onUserLeave);
+        chatConnection.onUserRename(onUserRename);
 
         //Setup event handlers for graphical components
         jQuery('#sendButton').on('click', function(event){

@@ -89,13 +89,13 @@ describe('chatConnection', function(){
         })
     })
 
-    describe('.onUserMessage', function(){
+    describe('.onChatMessage', function(){
 
         it('Should register the callback on the proper event', function(){
             var callback = function(data){};
 
             chatConnection.connect();
-            chatConnection.onUserMessage(callback);
+            chatConnection.onChatMessage(callback);
 
             assert.equal(onStub.callCount, 1);
             assert(onStub.calledWith(constants.CHAT_MESSAGE, callback));
@@ -103,7 +103,7 @@ describe('chatConnection', function(){
 
         it('Should throw an error if there is no connection', function(){
             assert.throws(function(){
-                chatConnection.onUserMessage(function(data){});
+                chatConnection.onChatMessage(function(data){});
             });
         })
     })
@@ -197,6 +197,24 @@ describe('chatConnection', function(){
         it('Should throw an error if there is no connection', function(){
             assert.throws(function(){
                 chatConnection.onUserLeave(function(data){});
+            });
+        })
+    })
+
+    describe('.onUserRename', function(){
+        it('Should register the callback on the proper event', function(){
+            var callback = function(data){};
+
+            chatConnection.connect();
+            chatConnection.onUserRename(callback);
+
+            assert.equal(onStub.callCount, 1);
+            assert(onStub.calledWith(constants.SYSTEM_USER_RENAME, callback));
+        })
+
+        it('Should throw an error if there is no connection', function(){
+            assert.throws(function(){
+                chatConnection.onUserRename(function(data){});
             });
         })
     })

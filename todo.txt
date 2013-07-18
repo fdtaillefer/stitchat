@@ -1,7 +1,6 @@
 - Use requirejs's optimizer?
 - Make the chat work using dust to display messages? Will that require an MVC framework?
 - Fun stuff like actual features
-    - Notifying users of connections, disconnections and renames
     - Display connected users
     - Whispers
     - Style stuff

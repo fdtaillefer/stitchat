@@ -35,16 +35,18 @@ define(["socketio", "app/constants"], function(io, constants) {
     }
 
     /**
-     * Registers a handler for an incoming user message. This must not be called before connect().
+     * Registers a handler for an incoming event for a chat message.
+     * This must not be called before connect().
      * The handler callback should receive one parameter which is a data object.
      */
-    var onUserMessage = function(handler){
+    var onChatMessage = function(handler){
         ensureConnected();
         socket.on(constants.CHAT_MESSAGE, handler);
     }
 
     /**
-     * Registers a handler for an incoming system greeting. This must not be called before connect().
+     * Registers a handler for an incoming system greeting event.
+     * This must not be called before connect().
      * The handler callback should receive one parameter which is a data object.
      */
     var onSystemGreeting = function(handler){
@@ -53,7 +55,8 @@ define(["socketio", "app/constants"], function(io, constants) {
     }
 
     /**
-     * Registers a handler for an incoming username confirmation from the system.
+     * Registers a handler for an incoming event that the system has successfully change current
+     * user's username.
      * This must not be called before connect();
      * The handler callback should receive one parameter which is a data object.
      */
@@ -63,7 +66,7 @@ define(["socketio", "app/constants"], function(io, constants) {
     }
 
     /**
-     * Registers a handler for an incoming message that a username already exists from the system.
+     * Registers a handler for an incoming event that a username already exists from the system.
      * This must not be called before connect();
      * The handler callback should receive one parameter which is a data object.
      */
@@ -73,7 +76,7 @@ define(["socketio", "app/constants"], function(io, constants) {
     }
 
     /**
-     * Registers a handler for an incoming message that a user has joined the chat.
+     * Registers a handler for an incoming event that a user has joined the chat.
      * This must not be called before connect();
      * The handler callback should receive one parameter which is a data object.
      */
@@ -83,13 +86,23 @@ define(["socketio", "app/constants"], function(io, constants) {
     }
 
     /**
-     * Registers a handler for an incoming message that a user has left the chat.
+     * Registers a handler for an incoming event that a user has left the chat.
      * This must not be called before connect();
      * The handler callback should receive one parameter which is a data object.
      */
     var onUserLeave = function(handler){
         ensureConnected();
         socket.on(constants.SYSTEM_USER_LEAVE, handler);
+    }
+
+    /**
+     * Registers a handler for an incoming event that a user has changed its name.
+     * This must not be called before connect();
+     * The handler callback should receive one parameter which is a data object.
+     */
+    var onUserRename = function(handler){
+        ensureConnected();
+        socket.on(constants.SYSTEM_USER_RENAME, handler);
     }
 
     /**
@@ -124,12 +137,13 @@ define(["socketio", "app/constants"], function(io, constants) {
         "connect": connect,
         "disconnect": disconnect,
         "ensureConnected":ensureConnected,
-        "onUserMessage": onUserMessage,
+        "onChatMessage": onChatMessage,
         "onSystemGreeting": onSystemGreeting,
         "onUsernameConfirmation": onUsernameConfirmation,
         "onUsernameExists": onUsernameExists,
         "onUserJoin": onUserJoin,
         "onUserLeave": onUserLeave,
+        "onUserRename": onUserRename,
         "outputChatMessage": outputChatMessage,
         "outputNameChange": outputNameChange
     }
