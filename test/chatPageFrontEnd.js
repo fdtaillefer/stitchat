@@ -351,7 +351,7 @@ describe('Chat page frontend', function(done){
         });
     });
 
-    it("Should change a user's name ***TODO***", function(done) {
+    it("Should change a user's name", function(done) {
         changeName(driver, "ChangedName");
 
         var textLine = "Line of text";

@@ -7,6 +7,10 @@
     color:#36DBFC;
 }
 
+.messagePreamble {
+    font-style:italic;
+}
+
 #chatDisplay {
     width: 500px;
     height: 300px;
@@ -21,5 +25,7 @@
 
 #currentUsernameField {
     line-height: 1ex;
-    height: 1.2ex
+    height: 1.2ex;
+    margin-right: 10px;
+    font-weight:bold;
 }
