@@ -83,6 +83,16 @@ define(["socketio", "app/constants"], function(io, constants) {
     }
 
     /**
+     * Registers a handler for an incoming message that a user has left the chat.
+     * This must not be called before connect();
+     * The handler callback should receive one parameter which is a data object.
+     */
+    var onUserLeave = function(handler){
+        ensureConnected();
+        socket.on(constants.SYSTEM_USER_LEAVE, handler);
+    }
+
+    /**
      * Sends a chat message to the chat server. This must not be called before connect().
      * @param message The actual text of the message
      */
@@ -119,6 +129,7 @@ define(["socketio", "app/constants"], function(io, constants) {
         "onUsernameConfirmation": onUsernameConfirmation,
         "onUsernameExists": onUsernameExists,
         "onUserJoin": onUserJoin,
+        "onUserLeave": onUserLeave,
         "outputChatMessage": outputChatMessage,
         "outputNameChange": outputNameChange
     }

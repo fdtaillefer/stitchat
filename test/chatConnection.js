@@ -183,6 +183,24 @@ describe('chatConnection', function(){
         })
     })
 
+    describe('.onUserLeave', function(){
+        it('Should register the callback on the proper event', function(){
+            var callback = function(data){};
+
+            chatConnection.connect();
+            chatConnection.onUserLeave(callback);
+
+            assert.equal(onStub.callCount, 1);
+            assert(onStub.calledWith(constants.SYSTEM_USER_LEAVE, callback));
+        })
+
+        it('Should throw an error if there is no connection', function(){
+            assert.throws(function(){
+                chatConnection.onUserLeave(function(data){});
+            });
+        })
+    })
+
     describe('.outputChatMessage', function(){
 
         it('Should send an event containing the message', function(){

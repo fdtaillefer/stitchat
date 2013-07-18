@@ -74,6 +74,14 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
     }
 
     /**
+     * Handles an incoming message that a user has left the chat.
+     */
+    var onUserLeave = function(data){
+        appendSystemMessage(data.username + ' has left the chat.',
+            [constants.USER_LEFT_CLASS]);
+    }
+
+    /**
      * Performs UI tasks related to sending a chat message, as well as ouputting the message to the server.
      */
     function sendChatMessage(){
@@ -145,6 +153,7 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
         chatConnection.onUsernameConfirmation(onUsernameConfirmation);
         chatConnection.onUsernameExists(onUsernameExists);
         chatConnection.onUserJoin(onUserJoin);
+        chatConnection.onUserLeave(onUserLeave);
 
         //Setup event handlers for graphical components
         jQuery('#sendButton').on('click', function(event){

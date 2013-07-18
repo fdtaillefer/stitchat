@@ -68,7 +68,7 @@ function start(options){
             //Greet the user
             socket.emit(constants.SYSTEM_GREETING, { 'username':newName });
 
-            //Tell all other users about the new user.
+            //Tell all other users about the new user
             socket.broadcast.emit(constants.SYSTEM_USER_JOIN, { 'username':newName });
 
             //Confirm the username to the user
@@ -86,7 +86,7 @@ function start(options){
                 });
             });
 
-            //Listen to user for name changes.
+            //Listen to user for name changes
             socket.on(constants.NAME_CHANGE, function(data){
                 if(options["logLevel"] >= 2){
                     console.log('Received ' + constants.NAME_CHANGE + ' from a user: ' + data.username);
@@ -119,7 +119,8 @@ function start(options){
                     console.log('A user disconnected from the chat');
                 }
                 userManager.removeUser(socket, function(removedUsername){
-                    //TODO Tell all other users about the user leaving.
+                    //Tell all other users about the user leaving
+                    socket.broadcast.emit(constants.SYSTEM_USER_LEAVE, { 'username':removedUsername });
                 });
             });
         });

@@ -32,6 +32,7 @@ var chatLineLocator = webdriver.By.className(constants.USER_MESSAGE_CLASS);
 var chatTextLocator = webdriver.By.className(constants.MESSAGE_TEXT_CLASS);
 var chatPreambleLocator = webdriver.By.className(constants.MESSAGE_PREAMBLE_CLASS);
 var userJoinedFieldLocator = webdriver.By.className(constants.USER_JOINED_CLASS);
+var userLeftFieldLocator = webdriver.By.className(constants.USER_LEFT_CLASS);
 
 //Username feature locators
 var beginNameChangeButtonLocator = webdriver.By.id("beginNameChangeButton");
@@ -256,6 +257,14 @@ describe('Chat page frontend', function(done){
         it("Should not tell a user that they themselves joined", function(done) {
             //Message indicating second user's arrival shouldn't be there for second user
             ensureAbsent(driver2, userJoinedFieldLocator, 1000, done);
+        });
+
+        it("Should tell other users when someone leaves", function(done) {
+            driver2.get(connectionString);
+            waitForElement(driver2, greetingFieldLocator, 1000).then(function(){
+                //Message indicating second user's arrival should be there
+                ensurePresent(driver, userLeftFieldLocator, 1000, done);
+            });
         });
     });
 
