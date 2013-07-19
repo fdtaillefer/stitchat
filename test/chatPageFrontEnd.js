@@ -59,7 +59,7 @@ var currentUsernameDisplayLocator = webdriver.By.id("currentUsernameDisplay");
  */
 function sendChatLine(driver, text, times, waitForChatField){
     if(waitForChatField){
-        waitForElement(driver, chatFieldLocator, 1000);
+        waitForElementPresent(driver, chatFieldLocator, 1000);
     }
     var chatField = driver.findElement(chatFieldLocator);
     var sendButton = driver.findElement(sendButtonLocator);
@@ -80,10 +80,10 @@ function sendChatLine(driver, text, times, waitForChatField){
  * @param driver Driver that should perform the operation
  */
 function beginNameChange(driver){
-    waitForElement(driver, beginNameChangeButtonLocator, 1000);
+    waitForElementPresent(driver, beginNameChangeButtonLocator, 1000);
     var button = driver.findElement(beginNameChangeButtonLocator);
     button.click();
-    waitForElementVisible(driver, nameChangeFormLocator, 1000);
+    waitForElementDisplayed(driver, nameChangeFormLocator, 1000);
 }
 
 /**
@@ -94,7 +94,7 @@ function beginNameChange(driver){
 function cancelNameChange(driver){
     var button = driver.findElement(cancelNameChangeButtonLocator);
     button.click();
-    waitForElementVisible(driver, currentUsernameDisplayLocator, 1000);
+    waitForElementDisplayed(driver, currentUsernameDisplayLocator, 1000);
 }
 
 /**
@@ -108,7 +108,7 @@ function changeName(driver, newName){
     field.sendKeys(newName);
     var button = driver.findElement(confirmNameChangeButtonLocator);
     button.click();
-    waitForElementVisible(driver, currentUsernameDisplayLocator, 1000);
+    waitForElementDisplayed(driver, currentUsernameDisplayLocator, 1000);
 }
 
 /**
@@ -116,15 +116,22 @@ function changeName(driver, newName){
  * @param driver Driver that should perform the operation.
  * @param locator A selenium locator that describes how to identify the element to wait for.
  * @param timeout How long to wait (in milliseconds) before giving up.
- * @return The promise returned by the invoked driver.wait() function.
+ * @return The promise returned by the last driver operation.
  */
-function waitForElement(driver, locator, timeout){
+function waitForElementPresent(driver, locator, timeout){
     return driver.wait(function() {
         return driver.isElementPresent(locator);
     }, timeout);
 }
 
-function waitForElementVisible(driver, locator, timeout){
+/**
+ * Asks the driver to wait for an element identified by the locator to be displayed.
+ * @param driver Driver that should perform the operation.
+ * @param locator A selenium locator that describes how to identify the element to wait for.
+ * @param timeout How long to wait (in milliseconds) before giving up.
+ * @return The promise returned by the last driver operation.
+ */
+function waitForElementDisplayed(driver, locator, timeout){
     return driver.wait(function() {
         return driver.findElement(locator).isDisplayed();
     }, timeout);
@@ -140,7 +147,7 @@ function waitForElementVisible(driver, locator, timeout){
  */
 function assertPresent(driver, locator, timeout, done){
     if(timeout){
-        waitForElement(driver, locator, timeout);
+        waitForElementPresent(driver, locator, timeout);
     }
     return driver.isElementPresent(locator).then(function(present){
         assert.equal(present, true, "Element " + locator + "should have been found.");
@@ -163,7 +170,7 @@ function assertAbsent(driver, locator, timeout, done){
 
         //If there is a timeout, wait for the element.
         //If it appears, throw an error. If we reach the timeout, all is well.
-        return waitForElement(driver, locator, timeout).then(function(){
+        return waitForElementPresent(driver, locator, timeout).then(function(){
             throw "Element " + locator + " should not have been found.";
         }, function(err){
             //Eat the error, it's the behavior we wanted.
@@ -222,9 +229,9 @@ describe('Chat page frontend', function(done){
         //For consistency's sake, we'll make sure each driver's username
         //has been attributed before we go on, so we can guarantee who's who.
         driver.get(connectionString);
-        waitForElement(driver, greetingFieldLocator, 1000).then(function(){
+        waitForElementPresent(driver, greetingFieldLocator, 1000).then(function(){
             driver2.get(connectionString);
-            waitForElement(driver2, greetingFieldLocator, 1000).then(function(){
+            waitForElementPresent(driver2, greetingFieldLocator, 1000).then(function(){
                 done();
             });
         });
@@ -254,9 +261,9 @@ describe('Chat page frontend', function(done){
         //For consistency's sake, we'll make sure each driver's username
         //has been attributed before we go on, so we can guarantee who's who.
         driver.get(connectionString);
-        waitForElement(driver, greetingFieldLocator, 1000).then(function(){
+        waitForElementPresent(driver, greetingFieldLocator, 1000).then(function(){
             driver2.get(connectionString);
-            waitForElement(driver2, greetingFieldLocator, 1000).then(function(){
+            waitForElementPresent(driver2, greetingFieldLocator, 1000).then(function(){
                 done();
             });
         });
@@ -287,7 +294,7 @@ describe('Chat page frontend', function(done){
 
         it("Should tell other users when someone leaves", function(done) {
             driver2.get(connectionString);
-            waitForElement(driver2, greetingFieldLocator, 1000).then(function(){
+            waitForElementPresent(driver2, greetingFieldLocator, 1000).then(function(){
                 //Message indicating second user's arrival should be there
                 assertPresent(driver, userLeftFieldLocator, 1000, done);
             });
@@ -300,7 +307,7 @@ describe('Chat page frontend', function(done){
             var textLine = "Line of text";
             sendChatLine(driver, textLine, 1, true);
 
-            waitForElement(driver, chatTextLocator, 1000);
+            waitForElementPresent(driver, chatTextLocator, 1000);
             driver.findElement(chatTextLocator).getText().then(function(text){
                 assert.equal(text, textLine);
                 done();
@@ -318,7 +325,7 @@ describe('Chat page frontend', function(done){
             var textLine = "Line of text";
             sendChatLine(driver, textLine, 1, true);
 
-            waitForElement(driver, chatPreambleLocator, 1000);
+            waitForElementPresent(driver, chatPreambleLocator, 1000);
             driver.findElement(chatPreambleLocator).getText().then(function(text){
                 //Looks like the reported text value gets trimmed, cause it's actually 'Guest: '.
                 //No matter, it's not what we're checking.
@@ -332,7 +339,7 @@ describe('Chat page frontend', function(done){
             var textLine = "Other line of text";
             sendChatLine(driver2, textLine, 1, true);
 
-            waitForElement(driver, chatTextLocator, 1000);
+            waitForElementPresent(driver, chatTextLocator, 1000);
             driver.findElement(chatTextLocator).getText().then(function(text){
                 assert.equal(text, textLine);
                 done();
@@ -374,10 +381,10 @@ describe('Chat page frontend', function(done){
 
         it("Should attribute default usernames properly and display them in currentUsername field", function(done) {
 
-            waitForElement(driver, currentUsernameFieldLocator, 1000);
+            waitForElementPresent(driver, currentUsernameFieldLocator, 1000);
             driver.findElement(currentUsernameFieldLocator).getText().then(function(text){
                 assert.equal(text, "Guest");
-                waitForElement(driver2, currentUsernameFieldLocator, 1000);
+                waitForElementPresent(driver2, currentUsernameFieldLocator, 1000);
                 driver2.findElement(currentUsernameFieldLocator).getText().then(function(text2){
                     assert.equal(text2, "Guest2");
                     done();
@@ -391,7 +398,7 @@ describe('Chat page frontend', function(done){
             var textLine = "Line of text";
             sendChatLine(driver, textLine, 1, true);
 
-            waitForElement(driver, chatPreambleLocator, 1000);
+            waitForElementPresent(driver, chatPreambleLocator, 1000);
             driver.findElement(chatPreambleLocator).getText().then(function(text){
                 //Looks like the reported text value gets trimmed, cause it's actually 'ChangedName: '.
                 //No matter, it's not what we're checking.
@@ -411,7 +418,7 @@ describe('Chat page frontend', function(done){
         });
 
         it("Should not display the name change form when opening", function(done) {
-            waitForElement(driver, nameChangeFormLocator, 1000);
+            waitForElementPresent(driver, nameChangeFormLocator, 1000);
             driver.findElement(nameChangeFormLocator).isDisplayed().then(function(displayed){
                 assert.equal(displayed, false);
                 done();
