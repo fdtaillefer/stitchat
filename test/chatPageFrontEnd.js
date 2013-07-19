@@ -252,6 +252,22 @@ function assertNotDisplayed(driver, locator, timeout, done){
     }
 }
 
+/**
+ * A helper function that asserts that an element's text matches an expected value.
+ * @param driver Driver that should perform the test
+ * @param locator Locator to find the element whose text must be tested
+ * @param expectedText Text that should equal the element's text.
+ * @param done Optional, a done callback to invoke if and when the assert succeeds.
+ * @return The promise returned by the last driver operation.
+ */
+function assertText(driver, locator, expectedText, done){
+    return driver.findElement(locator).getText().then(function(returnedText){
+        assert.equal(returnedText, expectedText);
+        if(done){
+            done();
+        }
+    });
+}
 
 describe('Chat page frontend', function(done){
 
@@ -320,7 +336,6 @@ describe('Chat page frontend', function(done){
     //We'll do a fresh connection to the server before each test
     beforeEach(function(done){
 
-
         //For consistency's sake, we'll make sure each driver's username
         //has been attributed before we go on, so we can guarantee who's who.
         driver.get(connectionString);
@@ -334,13 +349,11 @@ describe('Chat page frontend', function(done){
 
     describe('general behavior', function(){
         it("Should render the page when opening", function(done) {
-
             //The chat field won't be present if the page hasn't rendered.
             assertPresent(driver, chatFieldLocator, 1000, done);
         });
 
         it("Should greet the user when opening", function(done) {
-
             //Greeting text should appear by itself upon connection
             assertPresent(driver, greetingFieldLocator, 1000, done);
         });
@@ -366,47 +379,32 @@ describe('Chat page frontend', function(done){
 
     describe('chat message', function(){
         it("Should display current user's message after it has been sent", function(done) {
-
             var textLine = "Line of text";
             sendChatLine(driver, textLine, 1, true);
-
             waitForElementPresent(driver, chatTextLocator, 1000);
-            driver.findElement(chatTextLocator).getText().then(function(text){
-                assert.equal(text, textLine);
-                done();
-            });
+            assertText(driver, chatTextLocator, textLine, done);
         });
 
         it("Should not display an empty message", function(done) {
             var textLine = "";
             sendChatLine(driver, textLine, 1, true);
-
             assertAbsent(driver, chatTextLocator, 1000, done);
         });
 
         it("Should display username along with a message", function(done) {
             var textLine = "Line of text";
             sendChatLine(driver, textLine, 1, true);
-
             waitForElementPresent(driver, chatPreambleLocator, 1000);
-            driver.findElement(chatPreambleLocator).getText().then(function(text){
-                //Looks like the reported text value gets trimmed, cause it's actually 'Guest: '.
-                //No matter, it's not what we're checking.
-                assert.equal(text, "Guest:");
-                done();
-            });
+            //Looks like the reported text value gets trimmed, cause it's actually 'Guest: '.
+            //No matter, it's not what we're checking.
+            assertText(driver, chatPreambleLocator, "Guest:", done);
         });
 
         it("Should display another user's message after it has been sent", function(done) {
-
             var textLine = "Other line of text";
             sendChatLine(driver2, textLine, 1, true);
-
             waitForElementPresent(driver, chatTextLocator, 1000);
-            driver.findElement(chatTextLocator).getText().then(function(text){
-                assert.equal(text, textLine);
-                done();
-            });
+            assertText(driver, chatTextLocator, textLine, done);
         });
     });
 
@@ -443,15 +441,10 @@ describe('Chat page frontend', function(done){
     describe('username', function(){
 
         it("Should attribute default usernames properly and display them in currentUsername field", function(done) {
-
             waitForElementPresent(driver, currentUsernameFieldLocator, 1000);
-            driver.findElement(currentUsernameFieldLocator).getText().then(function(text){
-                assert.equal(text, "Guest");
+            assertText(driver, currentUsernameFieldLocator, "Guest").then(function(){
                 waitForElementPresent(driver2, currentUsernameFieldLocator, 1000);
-                driver2.findElement(currentUsernameFieldLocator).getText().then(function(text2){
-                    assert.equal(text2, "Guest2");
-                    done();
-                });
+                assertText(driver2, currentUsernameFieldLocator, "Guest2", done);
             });
         });
 
@@ -484,8 +477,6 @@ describe('Chat page frontend', function(done){
             waitForElementPresent(driver, nameChangeFormLocator, 1000);
             assertNotDisplayed(driver, nameChangeFormLocator, 1000, done);
         });
-
-
 
         it("Should display the name change form after beginning the name change", function(done) {
             beginNameChange(driver);
