@@ -83,7 +83,7 @@ function beginNameChange(driver){
     waitForElement(driver, beginNameChangeButtonLocator, 1000);
     var button = driver.findElement(beginNameChangeButtonLocator);
     button.click();
-    waitForElement(driver, nameChangeFormLocator, 1000);
+    waitForElementVisible(driver, nameChangeFormLocator, 1000);
 }
 
 /**
@@ -94,7 +94,7 @@ function beginNameChange(driver){
 function cancelNameChange(driver){
     var button = driver.findElement(cancelNameChangeButtonLocator);
     button.click();
-    waitForElement(driver, currentUsernameDisplayLocator, 1000);
+    waitForElementVisible(driver, currentUsernameDisplayLocator, 1000);
 }
 
 /**
@@ -108,7 +108,7 @@ function changeName(driver, newName){
     field.sendKeys(newName);
     var button = driver.findElement(confirmNameChangeButtonLocator);
     button.click();
-    waitForElement(driver, currentUsernameDisplayLocator, 1000);
+    waitForElementVisible(driver, currentUsernameDisplayLocator, 1000);
 }
 
 /**
@@ -124,37 +124,62 @@ function waitForElement(driver, locator, timeout){
     }, timeout);
 }
 
+function waitForElementVisible(driver, locator, timeout){
+    return driver.wait(function() {
+        return driver.findElement(locator).isDisplayed();
+    }, timeout);
+}
+
 /**
- * A helper function for tests whose final assertion is an element's presence.
- * This method should be the final call in those tests, and will ultimately
- * pass or fail the test based on the element's presence.
+ * A helper function that asserts the presence of an element, after optionally giving it some time to appear.
  * @param driver Driver that should perform the test
  * @param locator Locator to find the element
- * @param timeout Time (in milliseconds) to wait for the element to appear
- * @param done The test's done callback
+ * @param timeout Optional, time (in milliseconds) to wait for the element to appear.
+ * @param done Optional, a done callback to invoke if and when the assert succeeds.
+ * @return The promise returned by the last driver operation.
  */
-function ensurePresent(driver, locator, timeout, done){
-    waitForElement(driver, locator, timeout);
-    driver.isElementPresent(chatFieldLocator).then(function(present){
-        assert.equal(present, true);
-        done();
+function assertPresent(driver, locator, timeout, done){
+    if(timeout){
+        waitForElement(driver, locator, timeout);
+    }
+    return driver.isElementPresent(locator).then(function(present){
+        assert.equal(present, true, "Element " + locator + "should have been found.");
+        if(done){
+            done();
+        }
     });
 }
 
 /**
- * A helper function for tests whose final assertion is an element's absence.
- * This method should be the final call in those tests, and will ultimately
- * pass or fail the test based on the element's absence.
- * If the element is absent, the test will fail due to never calling done() and timing out.
+ * A helper function that asserts the absence of an element, after optionally giving it some time to appear.
  * @param driver Driver that should perform the test
  * @param locator Locator to find the element
- * @param timeout Time (in milliseconds) to wait for the element to appear
- * @param done The test's done callback
+ * @param timeout Optional, time (in milliseconds) to wait for the element to appear
+ * @param done Optional, a done callback to invoke if and when the assert succeeds.
+ * @return The promise returned by the last driver operation.
  */
-function ensureAbsent(driver, locator, timeout, done){
-    waitForElement(driver, locator, timeout).then(null, function(err){
-        done();
-    });
+function assertAbsent(driver, locator, timeout, done){
+    if(timeout){
+
+        //If there is a timeout, wait for the element.
+        //If it appears, throw an error. If we reach the timeout, all is well.
+        return waitForElement(driver, locator, timeout).then(function(){
+            throw "Element " + locator + " should not have been found.";
+        }, function(err){
+            //Eat the error, it's the behavior we wanted.
+            if(done){
+                done();
+            }
+        });
+    } else {
+        //If there is no timeout, we can simply check if element is present
+        return driver.isElementPresent(locator).then(function(present){
+            assert.equal(present, false, "Element " + locator + "should not have been found.");
+            if(done){
+                done();
+            }
+        });
+    }
 }
 
 
@@ -241,30 +266,30 @@ describe('Chat page frontend', function(done){
         it("Should render the page when opening", function(done) {
 
             //The chat field won't be present if the page hasn't rendered.
-            ensurePresent(driver, chatFieldLocator, 1000, done);
+            assertPresent(driver, chatFieldLocator, 1000, done);
         });
 
         it("Should greet the user when opening", function(done) {
 
             //Greeting text should appear by itself upon connection
-            ensurePresent(driver, greetingFieldLocator, 1000, done);
+            assertPresent(driver, greetingFieldLocator, 1000, done);
         });
 
         it("Should tell other users when someone joins", function(done) {
             //Message indicating second user's arrival should be there
-            ensurePresent(driver, userJoinedFieldLocator, 1000, done);
+            assertPresent(driver, userJoinedFieldLocator, 1000, done);
         });
 
         it("Should not tell a user that they themselves joined", function(done) {
             //Message indicating second user's arrival shouldn't be there for second user
-            ensureAbsent(driver2, userJoinedFieldLocator, 1000, done);
+            assertAbsent(driver2, userJoinedFieldLocator, 1000, done);
         });
 
         it("Should tell other users when someone leaves", function(done) {
             driver2.get(connectionString);
             waitForElement(driver2, greetingFieldLocator, 1000).then(function(){
                 //Message indicating second user's arrival should be there
-                ensurePresent(driver, userLeftFieldLocator, 1000, done);
+                assertPresent(driver, userLeftFieldLocator, 1000, done);
             });
         });
     });
@@ -286,7 +311,7 @@ describe('Chat page frontend', function(done){
             var textLine = "";
             sendChatLine(driver, textLine, 1, true);
 
-            ensureAbsent(driver, chatTextLocator, 1000, done);
+            assertAbsent(driver, chatTextLocator, 1000, done);
         });
 
         it("Should display username along with a message", function(done) {
@@ -377,12 +402,12 @@ describe('Chat page frontend', function(done){
 
         it("Should tell user if their name change is invalid because name exists", function(done) {
             changeName(driver, "Guest2");
-            ensurePresent(driver, usernameExistsFieldLocator, 1000, done);
+            assertPresent(driver, usernameExistsFieldLocator, 1000, done);
         });
 
         it("Should acknowledge the user's username when opening", function(done) {
             //Name confirmation should appear by itself upon connection
-            ensurePresent(driver, nameConfirmationFieldLocator, 1000, done);
+            assertPresent(driver, nameConfirmationFieldLocator, 1000, done);
         });
 
         it("Should not display the name change form when opening", function(done) {
@@ -421,14 +446,14 @@ describe('Chat page frontend', function(done){
 
         it("Should tell other users when someone changes their name", function(done) {
             //Message indicating second user's rename should be there
-            changeName(driver2, 'newName');
-            ensurePresent(driver, userRenamedFieldLocator, 1000, done);
+            changeName(driver, 'newName');
+            assertPresent(driver2, userRenamedFieldLocator, 1000, done);
         });
 
         it("Should not give a user the third person message when they changed their name", function(done) {
             //(Third person) message indicating second user's rename shouldn't be there for second user
-            changeName(driver2, 'newName');
-            ensureAbsent(driver2, userRenamedFieldLocator, 1000, done);
+            changeName(driver, 'newName');
+            assertAbsent(driver, userRenamedFieldLocator, 1000, done);
         });
     });
 })
