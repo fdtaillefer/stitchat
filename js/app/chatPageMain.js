@@ -145,11 +145,15 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
      */
     function sendNameChange(){
         var nameChangeField = jQuery('#nameChangeField');
-        chatConnection.outputNameChange(nameChangeField.val());
+        var newName = nameChangeField.val();
+        //If text is empty, don't bother sending
+        if(jQuery.trim(newName) !== ''){
+            chatConnection.outputNameChange(newName);
 
-        nameChangeField.val('');
+            nameChangeField.val('');
 
-        endNameChange();
+            endNameChange();
+        }
     }
 
     //Once initial page is done loading, run client-side initialization

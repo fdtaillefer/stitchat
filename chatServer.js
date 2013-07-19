@@ -94,8 +94,8 @@ function start(options){
 
                 socket.get('username', function(err, oldName){
 
-                    //If old and new name are the same, ignore the request. No need for feedback.
-                    if(oldName === data.username){
+                    //If old and new name are the same, or if new name is empty, ignore the request. No need for feedback.
+                    if(oldName === data.username || newName.trim() === ''){
                         return;
                     }
 

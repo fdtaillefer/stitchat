@@ -36,15 +36,17 @@ var userLeftFieldLocator = webdriver.By.className(constants.USER_LEFT_CLASS);
 var userRenamedFieldLocator = webdriver.By.className(constants.USER_RENAMED_CLASS);
 
 //Username feature locators
-var beginNameChangeButtonLocator = webdriver.By.id("beginNameChangeButton");
-var confirmNameChangeButtonLocator = webdriver.By.id("confirmNameChangeButton");
-var cancelNameChangeButtonLocator = webdriver.By.id("cancelNameChangeButton");
-var currentUsernameFieldLocator = webdriver.By.id("currentUsernameField");
 var nameConfirmationFieldLocator = webdriver.By.className(constants.USERNAME_CONFIRMATION_CLASS);
 var usernameExistsFieldLocator = webdriver.By.className(constants.USERNAME_EXISTS_CLASS);
-var nameChangeFieldLocator = webdriver.By.id("nameChangeField");
+
 var nameChangeFormLocator = webdriver.By.id("nameChangeForm");
+var nameChangeFieldLocator = webdriver.By.id("nameChangeField");
+var confirmNameChangeButtonLocator = webdriver.By.id("confirmNameChangeButton");
+var cancelNameChangeButtonLocator = webdriver.By.id("cancelNameChangeButton");
+
 var currentUsernameDisplayLocator = webdriver.By.id("currentUsernameDisplay");
+var currentUsernameFieldLocator = webdriver.By.id("currentUsernameField");
+var beginNameChangeButtonLocator = webdriver.By.id("beginNameChangeButton");
 
 //Helper functions for testing the chat
 
@@ -101,13 +103,20 @@ function cancelNameChange(driver){
  * Changes current username to newName.
  * @param driver Driver that should perform the operation
  * @param newName Username to change to.
+ * @param returnWithoutWaiting Optional, causes the operation to skip its normal behavior
+ * of waiting for the username display to become visible again.
+ * Useful only when sending an empty name.
  */
-function changeName(driver, newName){
+function changeName(driver, newName, returnWithoutWaiting){
+
     beginNameChange(driver);
     var field = driver.findElement(nameChangeFieldLocator);
     field.sendKeys(newName);
     var button = driver.findElement(confirmNameChangeButtonLocator);
     button.click();
+    if(returnWithoutWaiting){
+        return;
+    }
     waitForElementDisplayed(driver, currentUsernameDisplayLocator, 1000);
 }
 
@@ -136,6 +145,8 @@ function waitForElementDisplayed(driver, locator, timeout){
         return driver.findElement(locator).isDisplayed();
     }, timeout);
 }
+
+//Assertion functions, to ease test readability when using selenium-webdriver
 
 /**
  * A helper function that asserts the presence of an element, after optionally giving it some time to appear.
@@ -182,6 +193,58 @@ function assertAbsent(driver, locator, timeout, done){
         //If there is no timeout, we can simply check if element is present
         return driver.isElementPresent(locator).then(function(present){
             assert.equal(present, false, "Element " + locator + "should not have been found.");
+            if(done){
+                done();
+            }
+        });
+    }
+}
+
+/**
+ * A helper function that asserts that an element is displayed, after optionally giving it some time to be displayed.
+ * @param driver Driver that should perform the test
+ * @param locator Locator to find the element
+ * @param timeout Optional, time (in milliseconds) to wait for the element to be displayed.
+ * @param done Optional, a done callback to invoke if and when the assert succeeds.
+ * @return The promise returned by the last driver operation.
+ */
+function assertDisplayed(driver, locator, timeout, done){
+    if(timeout){
+        waitForElementDisplayed(driver, locator, timeout);
+    }
+    return driver.findElement(locator).isDisplayed().then(function(displayed){
+        assert.equal(displayed, true, "Element " + locator + "should be displayed.");
+        if(done){
+            done();
+        }
+    });
+}
+
+/**
+ * A helper function that asserts that an element is not displayed, after optionally giving it some time to be displayed.
+ * @param driver Driver that should perform the test
+ * @param locator Locator to find the element
+ * @param timeout Optional, time (in milliseconds) to wait for the element to be displayed
+ * @param done Optional, a done callback to invoke if and when the assert succeeds.
+ * @return The promise returned by the last driver operation.
+ */
+function assertNotDisplayed(driver, locator, timeout, done){
+   if(timeout){
+
+        //If there is a timeout, wait for the element.
+        //If it appears, throw an error. If we reach the timeout, all is well.
+        return waitForElementDisplayed(driver, locator, timeout).then(function(){
+            throw "Element " + locator + " should not be displayed.";
+        }, function(err){
+            //Eat the error, it's the behavior we wanted.
+            if(done){
+                done();
+            }
+        });
+    } else {
+        //If there is no timeout, we can simply check if element is displayed
+        return driver.findElement(locator).isDisplayed().then(function(displayed){
+            assert.equal(displayed, false, "Element " + locator + "should not be displayed.");
             if(done){
                 done();
             }
@@ -419,36 +482,25 @@ describe('Chat page frontend', function(done){
 
         it("Should not display the name change form when opening", function(done) {
             waitForElementPresent(driver, nameChangeFormLocator, 1000);
-            driver.findElement(nameChangeFormLocator).isDisplayed().then(function(displayed){
-                assert.equal(displayed, false);
-                done();
-            });
-
+            assertNotDisplayed(driver, nameChangeFormLocator, 1000, done);
         });
+
+
 
         it("Should display the name change form after beginning the name change", function(done) {
             beginNameChange(driver);
-            driver.findElement(nameChangeFormLocator).isDisplayed().then(function(displayed){
-                assert.equal(displayed, true);
-                done();
-            });
+            assertDisplayed(driver, nameChangeFormLocator, null, done);
         });
 
         it("Should not display the username after beginning the name change", function(done) {
             beginNameChange(driver);
-            driver.findElement(currentUsernameDisplayLocator).isDisplayed().then(function(displayed){
-                assert.equal(displayed, false);
-                done();
-            });
+            assertNotDisplayed(driver, currentUsernameDisplayLocator, null, done);
         });
 
         it("Should no longer display the name change form after canceling the name change", function(done) {
             beginNameChange(driver);
             cancelNameChange(driver);
-            driver.findElement(nameChangeFormLocator).isDisplayed().then(function(displayed){
-                assert.equal(displayed, false);
-                done();
-            });
+            assertNotDisplayed(driver, nameChangeFormLocator, null, done);
         });
 
         it("Should tell other users when someone changes their name", function(done) {
@@ -461,6 +513,11 @@ describe('Chat page frontend', function(done){
             //(Third person) message indicating second user's rename shouldn't be there for second user
             changeName(driver, 'newName');
             assertAbsent(driver, userRenamedFieldLocator, 1000, done);
+        });
+
+        it("Should not send an empty name change", function() {
+            changeName(driver, webdriver.Key.BACK_SPACE, true);
+            assertNotDisplayed(driver, currentUsernameDisplayLocator, 1000, done);
         });
     });
 })
