@@ -308,9 +308,9 @@ describe('Chat page frontend', function(done){
         //For consistency's sake, we'll make sure each driver's username
         //has been attributed before we go on, so we can guarantee who's who.
         driver.get(connectionString);
-        waitForElementPresent(driver, greetingFieldLocator, 1000).then(function(){
+        waitForElementPresent(driver, nameConfirmationFieldLocator, 1000).then(function(){
             driver2.get(connectionString);
-            waitForElementPresent(driver2, greetingFieldLocator, 1000).then(function(){
+            waitForElementPresent(driver2, nameConfirmationFieldLocator, 1000).then(function(){
                 done();
             });
         });
@@ -339,9 +339,9 @@ describe('Chat page frontend', function(done){
         //For consistency's sake, we'll make sure each driver's username
         //has been attributed before we go on, so we can guarantee who's who.
         driver.get(connectionString);
-        waitForElementPresent(driver, greetingFieldLocator, 1000).then(function(){
+        waitForElementPresent(driver, nameConfirmationFieldLocator, 1000).then(function(){
             driver2.get(connectionString);
-            waitForElementPresent(driver2, greetingFieldLocator, 1000).then(function(){
+            waitForElementPresent(driver2, nameConfirmationFieldLocator, 1000).then(function(){
                 done();
             });
         });
@@ -370,9 +370,15 @@ describe('Chat page frontend', function(done){
 
         it("Should tell other users when someone leaves", function(done) {
             driver2.get(connectionString);
-            waitForElementPresent(driver2, greetingFieldLocator, 1000).then(function(){
-                //Message indicating second user's arrival should be there
-                assertPresent(driver, userLeftFieldLocator, 1000, done);
+            //Message indicating second user's departure should show up
+            assertPresent(driver, userLeftFieldLocator, 1000).then(function(){
+
+                //After the test passes, we need to make sure we wait for client 2 to get its name.
+                //Otherwise, it can receive it while client 1 is refreshing in preparation for
+                //the next test, and then the names reverse and some tests fail.
+                waitForElementPresent(driver2, nameConfirmationFieldLocator, 1000).then(function(){
+                    done();
+                });
             });
         });
     });
@@ -450,17 +456,12 @@ describe('Chat page frontend', function(done){
 
         it("Should change a user's name", function(done) {
             changeName(driver, "ChangedName");
-
             var textLine = "Line of text";
             sendChatLine(driver, textLine, 1, true);
-
             waitForElementPresent(driver, chatPreambleLocator, 1000);
-            driver.findElement(chatPreambleLocator).getText().then(function(text){
-                //Looks like the reported text value gets trimmed, cause it's actually 'ChangedName: '.
-                //No matter, it's not what we're checking.
-                assert.equal(text, "ChangedName:");
-                done();
-            });
+            //Looks like the reported text value gets trimmed, cause it's actually 'ChangedName: '.
+            //No matter, it's not what we're checking.
+            assertText(driver, chatPreambleLocator, "ChangedName:", done);
         });
 
         it("Should tell user if their name change is invalid because name exists", function(done) {
