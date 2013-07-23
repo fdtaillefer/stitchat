@@ -30,9 +30,41 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
 
         //Append a div inside chatField
         var newLine = jQuery('<div class="'+ constants.USER_MESSAGE_CLASS +'"></div>');
-        var preamble = jQuery('<span class="' + constants.MESSAGE_PREAMBLE_CLASS + '"></span>');
+        var preamble = jQuery('<span class="' + constants.MESSAGE_PREAMBLE_CLASS + ' ' + constants.PREAMBLE_CLASS + '"></span>');
         preamble.text(data.username + ': ');
-        var text = jQuery('<span class="' + constants.MESSAGE_TEXT_CLASS + '"></span>');
+        var text = jQuery('<span class="' + constants.MESSAGE_TEXT_CLASS + ' ' + constants.TEXT_CONTENTS_CLASS + '"></span>');
+        text.text(data.message);
+        newLine.append(preamble, text);
+        scrollUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
+    }
+
+    /**
+     * Handles an incoming event of a sent whisper confirmation.
+     * @param data object describing the message.
+     */
+    var onWhisperSent = function(data){
+
+        //Append a div inside chatField
+        var newLine = jQuery('<div class="'+ constants.WHISPER_CLASS +'"></div>');
+        var preamble = jQuery('<span class="' + constants.WHISPER_PREAMBLE_CLASS + ' ' + constants.PREAMBLE_CLASS + '"></span>');
+        preamble.text('To ' + data.username + ': ');
+        var text = jQuery('<span class="' + constants.WHISPER_TEXT_CLASS + ' ' + constants.TEXT_CONTENTS_CLASS + '"></span>');
+        text.text(data.message);
+        newLine.append(preamble, text);
+        scrollUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
+    }
+
+    /**
+     * Handles an incoming event of a whisper from another user.
+     * @param data object describing the message.
+     */
+    var onWhisperReceived = function(data){
+
+        //Append a div inside chatField
+        var newLine = jQuery('<div class="'+ constants.WHISPER_CLASS +'"></div>');
+        var preamble = jQuery('<span class="' + constants.WHISPER_PREAMBLE_CLASS + ' ' + constants.PREAMBLE_CLASS + '"></span>');
+        preamble.text('From ' + data.username + ': ');
+        var text = jQuery('<span class="' + constants.WHISPER_TEXT_CLASS + ' ' + constants.TEXT_CONTENTS_CLASS + '"></span>');
         text.text(data.message);
         newLine.append(preamble, text);
         scrollUtils.appendMaintainingScroll(jQuery('#chatDisplay'), newLine);
@@ -59,12 +91,21 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
     }
 
     /**
+     * Handles an incoming event signifying that a user exists.
+     * @param data object describing the message.
+     */
+    var onUserExists = function(data){
+        appendSystemMessage('The user ' + data.username + ' exists.',
+            [constants.USER_EXISTS_CLASS]);
+    }
+
+    /**
      * Handles an incoming event that a name change failed because the name already exists.
      * @param data object describing the message.
      */
-    var onUsernameExists = function(data){
-        appendSystemMessage('Could not change names. The name ' + data.username + ' is already in use.',
-            [constants.USERNAME_EXISTS_CLASS]);
+    var onUserNotExists = function(data){
+        appendSystemMessage('The user ' + data.username + ' doesn\'t exist.',
+            [constants.USER_NOT_EXISTS_CLASS]);
     }
 
     /**
@@ -103,7 +144,18 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
 
         //If text is empty, don't bother sending
         if(jQuery.trim(textLine) !== ''){
-            chatConnection.outputChatMessage(textLine);
+
+            var chatTargetField = jQuery('#chatTarget');
+            var chatTarget = jQuery.trim(chatTargetField.val());
+
+            //If no target, send a public line of chat
+            if(chatTarget === ''){
+                chatConnection.outputChatMessage(textLine);
+            }//If there's a target, send a whisper
+            else {
+                chatConnection.outputWhisper(textLine, chatTarget);
+            }
+
 
             //Clear the field
             chatField.val('');
@@ -166,9 +218,12 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
         //Setup event handlers for chat events incoming from server
         chatConnection.connect();
         chatConnection.onChatMessage(onChatMessage);
+        chatConnection.onWhisperSent(onWhisperSent);
+        chatConnection.onWhisperReceived(onWhisperReceived);
         chatConnection.onSystemGreeting(onSystemGreeting);
         chatConnection.onUsernameConfirmation(onUsernameConfirmation);
-        chatConnection.onUsernameExists(onUsernameExists);
+        chatConnection.onUserExists(onUserExists);
+        chatConnection.onUserNotExists(onUserNotExists);
         chatConnection.onUserJoin(onUserJoin);
         chatConnection.onUserLeave(onUserLeave);
         chatConnection.onUserRename(onUserRename);

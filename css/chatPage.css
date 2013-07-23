@@ -7,7 +7,7 @@
     color:#36DBFC;
 }
 
-.messagePreamble {
+.preamble {
     font-style:italic;
 }
 
@@ -19,8 +19,13 @@
     overflow-y: scroll;
 }
 
+#chatTarget {
+    width: 100px;
+    margin-right: 5px;
+}
+
 #chatField {
-    width: 400px;
+    width: 350px;
 }
 
 #currentUsernameField {

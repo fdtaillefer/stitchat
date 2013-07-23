@@ -45,6 +45,26 @@ define(["socketio", "app/constants"], function(io, constants) {
     }
 
     /**
+     * Registers a handler for an incoming confirmation that a whisper has been sent to another user.
+     * This must not be called before connect().
+     * The handler callback should receive one parameter which is a data object.
+     */
+    var onWhisperSent = function(handler){
+        ensureConnected();
+        socket.on(constants.WHISPER_SENT, handler);
+    }
+
+    /**
+     * Registers a handler for an incoming whisper from another user.
+     * This must not be called before connect().
+     * The handler callback should receive one parameter which is a data object.
+     */
+    var onWhisperReceived = function(handler){
+        ensureConnected();
+        socket.on(constants.WHISPER_RECEIVED, handler);
+    }
+
+    /**
      * Registers a handler for an incoming system greeting event.
      * This must not be called before connect().
      * The handler callback should receive one parameter which is a data object.
@@ -66,13 +86,23 @@ define(["socketio", "app/constants"], function(io, constants) {
     }
 
     /**
-     * Registers a handler for an incoming event that a username already exists from the system.
+     * Registers a handler for an incoming event notifying that a user already exists from the system.
      * This must not be called before connect();
      * The handler callback should receive one parameter which is a data object.
      */
-    var onUsernameExists = function(handler){
+    var onUserExists = function(handler){
         ensureConnected();
-        socket.on(constants.SYSTEM_USERNAME_EXISTS, handler);
+        socket.on(constants.SYSTEM_USER_EXISTS, handler);
+    }
+
+    /**
+     * Registers a handler for an incoming event notifying that a user doesn't exist from the system.
+     * This must not be called before connect();
+     * The handler callback should receive one parameter which is a data object.
+     */
+    var onUserNotExists = function(handler){
+        ensureConnected();
+        socket.on(constants.SYSTEM_USER_NOT_EXISTS, handler);
     }
 
     /**
@@ -121,6 +151,28 @@ define(["socketio", "app/constants"], function(io, constants) {
         socket.emit(constants.CHAT_MESSAGE, data);
     }
 
+    /**
+     * Sends a chat message to a specific user. This must not be called before connect().
+     * @param message The actual text of the message
+     * @param target The user to whom the message is sent
+     */
+    var outputWhisper = function(message, target){
+
+        ensureConnected();
+
+        //Build message data
+        var data = {};
+        data['message'] = message;
+        data['username'] = target;
+
+        //Send message
+        socket.emit(constants.WHISPER_SENT, data);
+    }
+
+    /**
+     * Sends a name change request to the server. This must not be called before connect().
+     * @param newName The new name to request
+     */
     var outputNameChange = function(newName){
 
         ensureConnected();
@@ -138,13 +190,17 @@ define(["socketio", "app/constants"], function(io, constants) {
         "disconnect": disconnect,
         "ensureConnected":ensureConnected,
         "onChatMessage": onChatMessage,
+        "onWhisperSent": onWhisperSent,
+        "onWhisperReceived": onWhisperReceived,
         "onSystemGreeting": onSystemGreeting,
         "onUsernameConfirmation": onUsernameConfirmation,
-        "onUsernameExists": onUsernameExists,
+        "onUserExists": onUserExists,
+        "onUserNotExists": onUserNotExists,
         "onUserJoin": onUserJoin,
         "onUserLeave": onUserLeave,
         "onUserRename": onUserRename,
         "outputChatMessage": outputChatMessage,
+        "outputWhisper": outputWhisper,
         "outputNameChange": outputNameChange
     }
 });

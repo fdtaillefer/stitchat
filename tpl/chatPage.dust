@@ -2,6 +2,7 @@
 <div id="chatDisplay">
 </div>
 <form>
+    <input type="text" name="chatTarget" id="chatTarget" />
     <input type="text" name="chatLine" id="chatField" />
     <input type="submit" value="Send" id="sendButton" />
 </form>

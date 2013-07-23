@@ -25,6 +25,7 @@ var connectionString = constants.HOST + ":" + constants.CHAT_PORT;
 
 //Chat feature locators
 var chatFieldLocator = webdriver.By.id("chatField");
+var chatTargetFieldLocator = webdriver.By.id("chatTarget");
 var chatDisplayLocator = webdriver.By.id("chatDisplay");
 var sendButtonLocator = webdriver.By.id("sendButton");
 var greetingFieldLocator = webdriver.By.className(constants.SYSTEM_GREETING_CLASS);
@@ -35,9 +36,15 @@ var userJoinedFieldLocator = webdriver.By.className(constants.USER_JOINED_CLASS)
 var userLeftFieldLocator = webdriver.By.className(constants.USER_LEFT_CLASS);
 var userRenamedFieldLocator = webdriver.By.className(constants.USER_RENAMED_CLASS);
 
+//Whisper locators
+var whisperLineLocator = webdriver.By.className(constants.WHISPER_CLASS);
+var whisperTextLocator = webdriver.By.className(constants.WHISPER_TEXT_CLASS);
+var whisperPreambleLocator = webdriver.By.className(constants.WHISPER_PREAMBLE_CLASS);
+var userNotExistsFieldLocator = webdriver.By.className(constants.USER_NOT_EXISTS_CLASS);
+
 //Username feature locators
 var nameConfirmationFieldLocator = webdriver.By.className(constants.USERNAME_CONFIRMATION_CLASS);
-var usernameExistsFieldLocator = webdriver.By.className(constants.USERNAME_EXISTS_CLASS);
+var userExistsFieldLocator = webdriver.By.className(constants.USER_EXISTS_CLASS);
 
 var nameChangeFormLocator = webdriver.By.id("nameChangeForm");
 var nameChangeFieldLocator = webdriver.By.id("nameChangeField");
@@ -60,9 +67,44 @@ var beginNameChangeButtonLocator = webdriver.By.id("beginNameChangeButton");
  * @return The promise returned by the last action this method does (so the last click of the button).
  */
 function sendChatLine(driver, text, times, waitForChatField){
+
+    //Clear target field
+    setChatTarget(driver, '', waitForChatField);
+
+    //Send the actual text line
+    return outputText(driver, text, times, waitForChatField);
+}
+
+/**
+ * Types and sends a whisper using the driver. This method also optionally makes sure the chat field is present
+ * before attempting to send a message.
+ * @param driver Driver that should perform the operation.
+ * @param text The text to send as a chat line.
+ * @param target User to send the whisper to.
+ * @param waitForChatField Whether to wait for the chat field.
+ * @return The promise returned by the last action this method does (so the last click of the button).
+ */
+function sendWhisper(driver, text, target, waitForChatField){
+
+    setChatTarget(driver, target, waitForChatField);
+
+    //Send the actual text line
+    return outputText(driver, text, 1, waitForChatField);
+}
+
+/**
+ * Types text in the text field and then sends it, regardless of the target.
+ * @param driver Driver that should perform the operation.
+ * @param text The text to send as a chat line.
+ * @param times Number of times to send the text.
+ * @param waitForChatField Whether to wait for the chat field.
+ * @return The promise returned by the last action this method does (so the last click of the button).
+ */
+function outputText(driver, text, times, waitForChatField){
     if(waitForChatField){
         waitForElementPresent(driver, chatFieldLocator, 1000);
     }
+
     var chatField = driver.findElement(chatFieldLocator);
     var sendButton = driver.findElement(sendButtonLocator);
 
@@ -74,6 +116,21 @@ function sendChatLine(driver, text, times, waitForChatField){
     }
 
     return lastPromise;
+}
+
+/**
+ * Sets the target of the next chat message.
+ * @param driver Driver that should perform the operation
+ * @param target Name of the target
+ * @param waitForTargetField Whether to wait for the chat target field.
+ */
+function setChatTarget(driver, target, waitForTargetField){
+    if(waitForTargetField){
+        waitForElementPresent(driver, chatTargetFieldLocator, 1000);
+    }
+    var chatTargetField = driver.findElement(chatTargetFieldLocator);
+    chatTargetField.clear();
+    chatTargetField.sendKeys(target);
 }
 
 /**
@@ -414,6 +471,44 @@ describe('Chat page frontend', function(done){
         });
     });
 
+    describe('whisper', function(){
+        it("Should confirm the whisper to the sender after it has been sent", function(done) {
+            var textLine = "Line of whisper";
+            var target = "Guest2";
+            sendWhisper(driver, textLine, target, true);
+            waitForElementPresent(driver, whisperLineLocator, 1000);
+            //Looks like the reported text value gets trimmed, cause it's actually 'To Guest2: '.
+            //No matter, it's not what we're checking.
+            assertText(driver, whisperPreambleLocator, 'To ' + target + ':');
+            assertText(driver, whisperTextLocator, textLine, done);
+        });
+
+        it("Should send the whisper to the target", function(done) {
+            var textLine = "Line of whisper";
+            var target = "Guest2";
+            sendWhisper(driver, textLine, target, true);
+            waitForElementPresent(driver2, whisperLineLocator, 1000);
+            //Looks like the reported text value gets trimmed, cause it's actually 'From Guest: '.
+            //No matter, it's not what we're checking.
+            assertText(driver2, whisperPreambleLocator, 'From Guest:');
+            assertText(driver2, whisperTextLocator, textLine, done);
+        });
+
+        it("Should not send the whisper to a non-target", function(done) {
+            var textLine = "Line of whisper";
+            var target = "Guest";
+            sendWhisper(driver, textLine, target, true);
+            assertAbsent(driver2, whisperLineLocator, 1000, done);
+        });
+
+        it("Should notify if target doesn't exist", function(done) {
+            var textLine = "Line of whisper";
+            var target = "Mr. No one";
+            sendWhisper(driver, textLine, target, true);
+            assertPresent(driver, userNotExistsFieldLocator, 1000, done);
+        });
+    });
+
     describe('general display', function(){
         it("Should keep chatDisplay scrolled down if it is, or not scrolled down if it's not, after it receives a new message while full", function(done) {
 
@@ -466,7 +561,7 @@ describe('Chat page frontend', function(done){
 
         it("Should tell user if their name change is invalid because name exists", function(done) {
             changeName(driver, "Guest2");
-            assertPresent(driver, usernameExistsFieldLocator, 1000, done);
+            assertPresent(driver, userExistsFieldLocator, 1000, done);
         });
 
         it("Should acknowledge the user's username when opening", function(done) {

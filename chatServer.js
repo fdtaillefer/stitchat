@@ -86,6 +86,26 @@ function start(options){
                 });
             });
 
+            //Listen to user for whispers.
+            socket.on(constants.WHISPER_SENT, function (data) {
+                if(options["logLevel"] >= 2){
+                    console.log('Received ' + constants.WHISPER_SENT + ' from a user: ' + data.username + ', ' + data.message);
+                }
+
+                //Tell sender if user doesn't exist
+                var targetSocket = userManager.getUserSocket(data.username);
+                if(!targetSocket){
+                    socket.emit(constants.SYSTEM_USER_NOT_EXISTS, {username:data.username});
+                }//If user exists, tell both users about the whisper being sent.
+                else {
+                    socket.get('username', function(err, senderUsername){
+                        socket.emit(constants.WHISPER_SENT, data);
+                        targetSocket.emit(constants.WHISPER_RECEIVED, {message:data.message, username:senderUsername});
+                    });
+
+                }
+            });
+
             //Listen to user for name changes
             socket.on(constants.NAME_CHANGE, function(data){
                 if(options["logLevel"] >= 2){
@@ -109,7 +129,7 @@ function start(options){
                     }, function(){
 
                         //Tell user the new name exists
-                        socket.emit(constants.SYSTEM_USERNAME_EXISTS, { 'username':data.username });
+                        socket.emit(constants.SYSTEM_USER_EXISTS, { 'username':data.username });
                     }, function(){});
                 });
 

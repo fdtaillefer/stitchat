@@ -108,6 +108,44 @@ describe('chatConnection', function(){
         })
     })
 
+    describe('.onWhisperSent', function(){
+
+        it('Should register the callback on the proper event', function(){
+            var callback = function(data){};
+
+            chatConnection.connect();
+            chatConnection.onWhisperSent(callback);
+
+            assert.equal(onStub.callCount, 1);
+            assert(onStub.calledWith(constants.WHISPER_SENT, callback));
+        })
+
+        it('Should throw an error if there is no connection', function(){
+            assert.throws(function(){
+                chatConnection.onWhisperSent(function(data){});
+            });
+        })
+    })
+
+    describe('.onWhisperReceived', function(){
+
+        it('Should register the callback on the proper event', function(){
+            var callback = function(data){};
+
+            chatConnection.connect();
+            chatConnection.onWhisperReceived(callback);
+
+            assert.equal(onStub.callCount, 1);
+            assert(onStub.calledWith(constants.WHISPER_RECEIVED, callback));
+        })
+
+        it('Should throw an error if there is no connection', function(){
+            assert.throws(function(){
+                chatConnection.onWhisperReceived(function(data){});
+            });
+        })
+    })
+
     describe('.onSystemGreeting', function(){
 
         it('Should register the callback on the proper event', function(){
@@ -146,21 +184,40 @@ describe('chatConnection', function(){
         })
     })
 
-    describe('.onUsernameExists', function(){
+    describe('.onUserExists', function(){
 
         it('Should register the callback on the proper event', function(){
             var callback = function(data){};
 
             chatConnection.connect();
-            chatConnection.onUsernameExists(callback);
+            chatConnection.onUserExists(callback);
 
             assert.equal(onStub.callCount, 1);
-            assert(onStub.calledWith(constants.SYSTEM_USERNAME_EXISTS, callback));
+            assert(onStub.calledWith(constants.SYSTEM_USER_EXISTS, callback));
         })
 
         it('Should throw an error if there is no connection', function(){
             assert.throws(function(){
-                chatConnection.onUsernameExists(function(data){});
+                chatConnection.onUserExists(function(data){});
+            });
+        })
+    })
+
+    describe('.onUserNotExists', function(){
+
+        it('Should register the callback on the proper event', function(){
+            var callback = function(data){};
+
+            chatConnection.connect();
+            chatConnection.onUserNotExists(callback);
+
+            assert.equal(onStub.callCount, 1);
+            assert(onStub.calledWith(constants.SYSTEM_USER_NOT_EXISTS, callback));
+        })
+
+        it('Should throw an error if there is no connection', function(){
+            assert.throws(function(){
+                chatConnection.onUserNotExists(function(data){});
             });
         })
     })
@@ -231,6 +288,22 @@ describe('chatConnection', function(){
         it('Should throw an error if there is no connection', function(){
             assert.throws(function(){
                 chatConnection.outputChatMessage("Chat message");
+            });
+        })
+    })
+
+    describe('.outputWhisper', function(){
+
+        it('Should send an event containing the message and target', function(){
+            chatConnection.connect();
+            chatConnection.outputWhisper("Chat message", "target");
+            assert.equal(emitStub.callCount, 1);
+            assert(emitStub.calledWith(constants.WHISPER_SENT, {"message":"Chat message", "username":"target"}));
+        })
+
+        it('Should throw an error if there is no connection', function(){
+            assert.throws(function(){
+                chatConnection.outputWhisper("Chat message", "target");
             });
         })
     })
