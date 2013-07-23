@@ -168,6 +168,7 @@ function changeName(driver, newName, returnWithoutWaiting){
 
     beginNameChange(driver);
     var field = driver.findElement(nameChangeFieldLocator);
+    field.clear();
     field.sendKeys(newName);
     var button = driver.findElement(confirmNameChangeButtonLocator);
     button.click();
@@ -490,8 +491,9 @@ describe('Chat page frontend', function(done){
             waitForElementPresent(driver2, whisperLineLocator, 1000);
             //Looks like the reported text value gets trimmed, cause it's actually 'From Guest: '.
             //No matter, it's not what we're checking.
-            assertText(driver2, whisperPreambleLocator, 'From Guest:');
-            assertText(driver2, whisperTextLocator, textLine, done);
+            assertText(driver2, whisperPreambleLocator, 'From Guest:').then(function(){
+                assertText(driver2, whisperTextLocator, textLine, done);
+            });
         });
 
         it("Should not send the whisper to a non-target", function(done) {
@@ -559,6 +561,16 @@ describe('Chat page frontend', function(done){
             assertText(driver, chatPreambleLocator, "ChangedName:", done);
         });
 
+        it("Should trim before changing a user's name", function(done) {
+            changeName(driver, " ChangedName  ");
+            var textLine = "Line of text";
+            sendChatLine(driver, textLine, 1, true);
+            waitForElementPresent(driver, chatPreambleLocator, 1000);
+            //Looks like the reported text value gets trimmed, cause it's actually 'ChangedName: '.
+            //No matter, it's not what we're checking.
+            assertText(driver, chatPreambleLocator, "ChangedName:", done);
+        });
+
         it("Should tell user if their name change is invalid because name exists", function(done) {
             changeName(driver, "Guest2");
             assertPresent(driver, userExistsFieldLocator, 1000, done);
@@ -603,7 +615,7 @@ describe('Chat page frontend', function(done){
         });
 
         it("Should not send an empty name change", function() {
-            changeName(driver, webdriver.Key.BACK_SPACE, true);
+            changeName(driver, '', true);
             assertNotDisplayed(driver, currentUsernameDisplayLocator, 1000, done);
         });
     });

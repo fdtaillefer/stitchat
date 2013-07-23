@@ -197,9 +197,9 @@ require(["jquery", "app/pageBuilder", "app/chatConnection", "app/scrollUtils", "
      */
     function sendNameChange(){
         var nameChangeField = jQuery('#nameChangeField');
-        var newName = nameChangeField.val();
+        var newName = jQuery.trim(nameChangeField.val());
         //If text is empty, don't bother sending
-        if(jQuery.trim(newName) !== ''){
+        if(newName !== ''){
             chatConnection.outputNameChange(newName);
 
             nameChangeField.val('');
